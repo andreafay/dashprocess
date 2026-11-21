@@ -1,0 +1,16 @@
+appId: com.hpdashboard.app
+productName: Hiring Dashboard
+directories:
+  buildResources: build
+files:
+  - out/**
+  - package.json
+asar: true
+win:
+  executableName: hiring-dashboard
+  target: nsis
+nsis:
+  artifactName: ${name}-${version}-setup.${ext}
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: always

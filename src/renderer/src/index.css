@@ -1,0 +1,136 @@
+@import 'tailwindcss';
+
+/* Theme is set on <html data-theme="light|dark"> by src/renderer/src/lib/theme.ts. */
+@custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));
+
+@theme inline {
+  --font-sans: 'Inter Variable', ui-sans-serif, system-ui, sans-serif;
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-column: var(--column);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-fg: var(--fg);
+  --color-muted: var(--muted);
+  --color-subtle: var(--subtle);
+  --color-accent: var(--accent);
+  --color-accent-fg: var(--accent-fg);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-text: var(--accent-text);
+  --color-accent-soft: var(--accent-soft);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-ring: var(--ring);
+}
+
+:root {
+  --bg: #f6f7f9;
+  --surface: #ffffff;
+  --surface-2: #f1f3f6;
+  --column: #eef0f4;
+  --border: #e3e6eb;
+  --border-strong: #cfd4dc;
+  --fg: #0f172a;
+  --muted: #5b6475;
+  --subtle: #8a93a3;
+  /* Yellow accent. --accent is a fill (needs dark text on it); --accent-text is the
+     deeper amber for text, icons and borders on light surfaces. */
+  --accent: #facc15;
+  --accent-hover: #eab308;
+  --accent-fg: #1f1a05;
+  --accent-soft: #fef9c3;
+  --accent-text: #a16207;
+  --danger: #dc2626;
+  --danger-soft: #fef2f2;
+  --ring: #eab308;
+  --shadow-card: 0 1px 2px rgb(15 23 42 / 0.05), 0 1px 1px rgb(15 23 42 / 0.03);
+  --shadow-lift: 0 12px 28px rgb(15 23 42 / 0.14), 0 2px 6px rgb(15 23 42 / 0.08);
+  color-scheme: light;
+}
+
+:root[data-theme='dark'] {
+  /* Soft charcoal/slate rather than pure black. Keep --bg in sync with src/main/index.ts. */
+  --bg: #1d2129;
+  --surface: #272c36;
+  --surface-2: #2f3541;
+  --column: #232832;
+  --border: #363d4a;
+  --border-strong: #465061;
+  --fg: #e8ebf1;
+  --muted: #a7afbe;
+  --subtle: #7e8798;
+  --accent: #facc15;
+  --accent-hover: #fde047;
+  --accent-fg: #1f1a05;
+  --accent-soft: #3a3420;
+  --accent-text: #fcd34d;
+  --danger: #f87171;
+  --danger-soft: #3a2427;
+  --ring: #facc15;
+  --shadow-card: 0 1px 2px rgb(0 0 0 / 0.18);
+  --shadow-lift: 0 16px 32px rgb(0 0 0 / 0.35), 0 2px 6px rgb(0 0 0 / 0.2);
+  color-scheme: dark;
+}
+
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  -webkit-font-smoothing: antialiased;
+  user-select: none;
+}
+
+input,
+textarea {
+  user-select: text;
+}
+
+/* Lets the custom title bar drag the window; interactive children opt out. */
+.drag {
+  -webkit-app-region: drag;
+}
+.no-drag {
+  -webkit-app-region: no-drag;
+}
+
+/* Slim scrollbars */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 999px;
+  border: 3px solid transparent;
+  background-clip: padding-box;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes pop-in {
+  /* Only scale here: Tailwind v4 centers the dialog with the separate `translate` property. */
+  from { opacity: 0; transform: scale(0.97); }
+  to { opacity: 1; transform: scale(1); }
+}
+@keyframes menu-in {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in { animation: fade-in 140ms ease-out; }
+.animate-pop-in { animation: pop-in 160ms cubic-bezier(0.16, 1, 0.3, 1); }
+.animate-menu-in { animation: menu-in 120ms ease-out; }
