@@ -51,6 +51,15 @@ const MIGRATIONS: ((db: DatabaseSync) => void)[] = [
   },
   (db) => {
     db.exec('CREATE TABLE settings (key TEXT PRIMARY KEY, value TEXT NOT NULL)')
+  },
+  (db) => {
+    // Consulting yes/no becomes a choice between a consulting and a product company.
+    db.exec(`
+      ALTER TABLE processes ADD COLUMN company_type TEXT NOT NULL DEFAULT 'product'
+        CHECK (company_type IN ('consulting', 'product'));
+      UPDATE processes SET company_type = 'consulting' WHERE consulting = 1;
+      ALTER TABLE processes DROP COLUMN consulting;
+    `)
   }
 ]
 

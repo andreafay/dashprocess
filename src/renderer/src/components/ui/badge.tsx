@@ -8,7 +8,8 @@ const tones = {
   amber: 'bg-amber-500/15 text-amber-700 dark:text-amber-400 border-transparent',
   sky: 'bg-sky-500/10 text-sky-700 dark:text-sky-400 border-transparent',
   rose: 'bg-rose-500/10 text-rose-700 dark:text-rose-400 border-transparent',
-  violet: 'bg-violet-500/10 text-violet-700 dark:text-violet-400 border-transparent'
+  violet: 'bg-violet-500/10 text-violet-700 dark:text-violet-400 border-transparent',
+  indigo: 'bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 border-transparent'
 }
 
 export type BadgeTone = keyof typeof tones

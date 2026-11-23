@@ -49,7 +49,7 @@ export function ProcessDialog() {
         status: 'active',
         remote: true,
         b2b: false,
-        consulting: false,
+        companyType: 'product',
         region: 'italian',
         startDate: today(),
         payMin: '',
@@ -167,17 +167,22 @@ export function ProcessDialog() {
         </div>
 
         <Section title="Details">
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 gap-3">
             <ToggleCard id="remote" label="Remote" checked={form.remote} onChange={(remote) => set({ remote })} />
             <ToggleCard id="b2b" label="B2B" checked={form.b2b} onChange={(b2b) => set({ b2b })} />
-            <ToggleCard
-              id="consulting"
-              label="Consulting"
-              checked={form.consulting}
-              onChange={(consulting) => set({ consulting })}
-            />
           </div>
           <div className="grid grid-cols-2 gap-3">
+            <Field label="Company type">
+              <Segmented
+                className="w-full"
+                value={form.companyType}
+                onChange={(companyType) => set({ companyType })}
+                options={[
+                  { value: 'product', label: 'Product' },
+                  { value: 'consulting', label: 'Consulting' }
+                ]}
+              />
+            </Field>
             <Field label="Region">
               <Segmented
                 className="w-full"
@@ -189,6 +194,8 @@ export function ProcessDialog() {
                 ]}
               />
             </Field>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
             <Field label="Start date" htmlFor="start">
               <Input
                 id="start"

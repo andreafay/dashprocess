@@ -1,5 +1,6 @@
 import { getDb, transaction } from './db'
 import {
+  COMPANY_TYPES,
   CURRENCIES,
   PAY_PERIODS,
   REGIONS,
@@ -91,7 +92,7 @@ interface ProcessRow {
   status: Process['status']
   remote: number
   b2b: number
-  consulting: number
+  company_type: Process['companyType']
   region: Process['region']
   start_date: string | null
   pay_min: number | null
@@ -113,7 +114,7 @@ function toProcess(r: ProcessRow): Process {
     status: r.status,
     remote: !!r.remote,
     b2b: !!r.b2b,
-    consulting: !!r.consulting,
+    companyType: r.company_type,
     region: r.region,
     startDate: r.start_date,
     payMin: r.pay_min,
@@ -149,12 +150,12 @@ export function createProcess(input: ProcessInput): Process {
     .get(p.stageId) as { next: number }
   const { lastInsertRowid } = db
     .prepare(
-      `INSERT INTO processes (company, role, stage_id, position, status, remote, b2b, consulting,
+      `INSERT INTO processes (company, role, stage_id, position, status, remote, b2b, company_type,
          region, start_date, pay_min, pay_max, pay_currency, pay_period, notes)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
     )
     .run(
-      p.company, p.role, p.stageId, next, p.status, +p.remote, +p.b2b, +p.consulting,
+      p.company, p.role, p.stageId, next, p.status, +p.remote, +p.b2b, p.companyType,
       p.region, p.startDate, p.payMin, p.payMax, p.payCurrency, p.payPeriod, p.notes
     )
   return getProcess(Number(lastInsertRowid))
@@ -166,12 +167,12 @@ export function updateProcess(id: number, input: ProcessInput): Process {
   transaction(db, () => {
     const current = getProcess(id)
     db.prepare(
-      `UPDATE processes SET company = ?, role = ?, status = ?, remote = ?, b2b = ?, consulting = ?,
+      `UPDATE processes SET company = ?, role = ?, status = ?, remote = ?, b2b = ?, company_type = ?,
          region = ?, start_date = ?, pay_min = ?, pay_max = ?, pay_currency = ?, pay_period = ?,
          notes = ?, updated_at = datetime('now')
        WHERE id = ?`
     ).run(
-      p.company, p.role, p.status, +p.remote, +p.b2b, +p.consulting, p.region, p.startDate,
+      p.company, p.role, p.status, +p.remote, +p.b2b, p.companyType, p.region, p.startDate,
       p.payMin, p.payMax, p.payCurrency, p.payPeriod, p.notes, id
     )
     // Changing the stage from the form puts the card at the end of the new column.
@@ -274,7 +275,7 @@ function validate(input: ProcessInput): ProcessInput {
     status: oneOf(input.status, STATUSES, 'status'),
     remote: !!input.remote,
     b2b: !!input.b2b,
-    consulting: !!input.consulting,
+    companyType: oneOf(input.companyType, COMPANY_TYPES, 'company type'),
     region: oneOf(input.region, REGIONS, 'region'),
     startDate,
     payMin,

@@ -4,6 +4,9 @@ export type Status = (typeof STATUSES)[number]
 export const REGIONS = ['italian', 'european'] as const
 export type Region = (typeof REGIONS)[number]
 
+export const COMPANY_TYPES = ['consulting', 'product'] as const
+export type CompanyType = (typeof COMPANY_TYPES)[number]
+
 export const PAY_PERIODS = ['year', 'month', 'day', 'hour'] as const
 export type PayPeriod = (typeof PAY_PERIODS)[number]
 
@@ -26,7 +29,7 @@ export interface ProcessInput {
   status: Status
   remote: boolean
   b2b: boolean
-  consulting: boolean
+  companyType: CompanyType
   region: Region
   startDate: string | null
   payMin: number | null

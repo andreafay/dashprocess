@@ -69,7 +69,9 @@ export function ProcessCard({ process: p, overlay, placeholder }: Props) {
       <div className="mt-3 flex flex-wrap gap-1">
         <Badge tone={p.remote ? 'green' : 'neutral'}>{p.remote ? 'Remote' : 'On-site'}</Badge>
         <Badge tone={p.b2b ? 'violet' : 'neutral'}>{p.b2b ? 'B2B' : 'Employee'}</Badge>
-        {p.consulting && <Badge tone="amber">Consulting</Badge>}
+        <Badge tone={p.companyType === 'consulting' ? 'amber' : 'indigo'}>
+          {p.companyType === 'consulting' ? 'Consulting' : 'Product'}
+        </Badge>
         <Badge tone="sky">{p.region === 'italian' ? 'Italian' : 'European'}</Badge>
       </div>
 
