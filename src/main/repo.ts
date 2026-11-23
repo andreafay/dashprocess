@@ -100,6 +100,7 @@ interface ProcessRow {
   pay_currency: string
   pay_period: Process['payPeriod']
   notes: string
+  job_url: string
   created_at: string
   updated_at: string
 }
@@ -122,6 +123,7 @@ function toProcess(r: ProcessRow): Process {
     payCurrency: r.pay_currency,
     payPeriod: r.pay_period,
     notes: r.notes,
+    jobUrl: r.job_url,
     createdAt: r.created_at,
     updatedAt: r.updated_at
   }
@@ -151,12 +153,12 @@ export function createProcess(input: ProcessInput): Process {
   const { lastInsertRowid } = db
     .prepare(
       `INSERT INTO processes (company, role, stage_id, position, status, remote, b2b, company_type,
-         region, start_date, pay_min, pay_max, pay_currency, pay_period, notes)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+         region, start_date, pay_min, pay_max, pay_currency, pay_period, notes, job_url)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
     )
     .run(
       p.company, p.role, p.stageId, next, p.status, +p.remote, +p.b2b, p.companyType,
-      p.region, p.startDate, p.payMin, p.payMax, p.payCurrency, p.payPeriod, p.notes
+      p.region, p.startDate, p.payMin, p.payMax, p.payCurrency, p.payPeriod, p.notes, p.jobUrl
     )
   return getProcess(Number(lastInsertRowid))
 }
@@ -169,11 +171,11 @@ export function updateProcess(id: number, input: ProcessInput): Process {
     db.prepare(
       `UPDATE processes SET company = ?, role = ?, status = ?, remote = ?, b2b = ?, company_type = ?,
          region = ?, start_date = ?, pay_min = ?, pay_max = ?, pay_currency = ?, pay_period = ?,
-         notes = ?, updated_at = datetime('now')
+         notes = ?, job_url = ?, updated_at = datetime('now')
        WHERE id = ?`
     ).run(
       p.company, p.role, p.status, +p.remote, +p.b2b, p.companyType, p.region, p.startDate,
-      p.payMin, p.payMax, p.payCurrency, p.payPeriod, p.notes, id
+      p.payMin, p.payMax, p.payCurrency, p.payPeriod, p.notes, p.jobUrl, id
     )
     // Changing the stage from the form puts the card at the end of the new column.
     if (current.stageId !== p.stageId) {
@@ -256,6 +258,23 @@ function oneOf<T extends string>(value: unknown, allowed: readonly T[], label: s
   return value as T
 }
 
+/** Empty, or an http(s) web address. "acme.com/jobs/1" is accepted as https://acme.com/jobs/1. */
+function optionalUrl(value: unknown): string {
+  const text = typeof value === 'string' ? value.trim() : ''
+  if (!text) return ''
+  const withScheme = /^[a-z][a-z0-9+.-]*:/i.test(text) ? text : `https://${text}`
+  let url: URL
+  try {
+    url = new URL(withScheme)
+  } catch {
+    throw new Error('Job ad link must be a web address')
+  }
+  if ((url.protocol !== 'http:' && url.protocol !== 'https:') || !url.hostname.includes('.')) {
+    throw new Error('Job ad link must be a web address')
+  }
+  return url.href
+}
+
 function validate(input: ProcessInput): ProcessInput {
   const payMin = optionalAmount(input.payMin, 'Minimum pay')
   const payMax = optionalAmount(input.payMax, 'Maximum pay')
@@ -282,7 +301,8 @@ function validate(input: ProcessInput): ProcessInput {
     payMax,
     payCurrency: oneOf(input.payCurrency, CURRENCIES, 'currency'),
     payPeriod: oneOf(input.payPeriod, PAY_PERIODS, 'pay period'),
-    notes: typeof input.notes === 'string' ? input.notes.trim() : ''
+    notes: typeof input.notes === 'string' ? input.notes.trim() : '',
+    jobUrl: optionalUrl(input.jobUrl)
   }
 }
 

@@ -20,7 +20,7 @@ function createWindow(): void {
     minWidth: 960,
     minHeight: 600,
     show: false,
-    title: 'Hiring Dashboard',
+    title: 'Dashprocess',
     backgroundColor: nativeTheme.shouldUseDarkColors ? BG.dark : BG.light,
     titleBarStyle: 'hidden',
     titleBarOverlay: { ...overlayColors(), height: 40 },

@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import type { Process, ProcessInput, Stage } from '@shared/types'
+import { processTags } from '@/lib/tags'
 import { errorMessage } from '@/lib/utils'
 
 /** What the process dialog is showing: nothing, a new process (optionally in a stage), or an existing one. */
@@ -160,7 +161,22 @@ export function isEnded(p: Process): boolean {
 }
 
 /** Ended (rejected/withdrawn) processes stay on the board, shown faded. */
+/**
+ * Every typed word must appear somewhere in the card: company, role, notes, a badge label
+ * (Product, B2B, Remote, Italian…) or the status. "product remote" finds remote product jobs.
+ */
 export function matchesSearch(p: Process, search: string): boolean {
-  const q = search.trim().toLowerCase()
-  return !q || `${p.company} ${p.role} ${p.notes}`.toLowerCase().includes(q)
+  const words = search.toLowerCase().split(/\s+/).filter(Boolean)
+  if (words.length === 0) return true
+  const text = [
+    p.company,
+    p.role,
+    p.notes,
+    p.status,
+    ...processTags(p).map((t) => t.label),
+    p.remote ? '' : 'onsite'
+  ]
+    .join(' ')
+    .toLowerCase()
+  return words.every((w) => text.includes(w))
 }

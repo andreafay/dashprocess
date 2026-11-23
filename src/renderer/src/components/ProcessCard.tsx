@@ -1,7 +1,8 @@
-import { Banknote, CalendarDays, StickyNote } from 'lucide-react'
+import { Banknote, CalendarDays, ExternalLink, StickyNote } from 'lucide-react'
 import type { Process } from '@shared/types'
 import { Badge } from './ui/badge'
 import { formatDate, formatPay, sinceDate } from '@/lib/format'
+import { processTags } from '@/lib/tags'
 import { cn } from '@/lib/utils'
 
 const AVATAR_COLORS = [
@@ -67,15 +68,14 @@ export function ProcessCard({ process: p, overlay, placeholder }: Props) {
       </div>
 
       <div className="mt-3 flex flex-wrap gap-1">
-        <Badge tone={p.remote ? 'green' : 'neutral'}>{p.remote ? 'Remote' : 'On-site'}</Badge>
-        <Badge tone={p.b2b ? 'violet' : 'neutral'}>{p.b2b ? 'B2B' : 'Employee'}</Badge>
-        <Badge tone={p.companyType === 'consulting' ? 'amber' : 'indigo'}>
-          {p.companyType === 'consulting' ? 'Consulting' : 'Product'}
-        </Badge>
-        <Badge tone="sky">{p.region === 'italian' ? 'Italian' : 'European'}</Badge>
+        {processTags(p).map((t) => (
+          <Badge key={t.label} tone={t.tone}>
+            {t.label}
+          </Badge>
+        ))}
       </div>
 
-      {(pay || p.startDate || p.notes) && (
+      {(pay || p.startDate || p.notes || p.jobUrl) && (
         <div className="mt-3 flex items-center gap-3 border-t border-border pt-2.5 text-[12px] text-muted">
           {pay && (
             <span className="flex min-w-0 items-center gap-1 font-medium text-fg">
@@ -84,6 +84,22 @@ export function ProcessCard({ process: p, overlay, placeholder }: Props) {
             </span>
           )}
           <span className="flex-1" />
+          {p.jobUrl && (
+            <a
+              href={p.jobUrl}
+              target="_blank"
+              rel="noreferrer"
+              title={`Open job ad: ${p.jobUrl}`}
+              aria-label="Open job ad"
+              // Don't start a drag or open the editor when clicking the link.
+              onPointerDown={(e) => e.stopPropagation()}
+              onClick={(e) => e.stopPropagation()}
+              onKeyDown={(e) => e.stopPropagation()}
+              className="-m-1 flex shrink-0 rounded p-1 text-subtle hover:bg-surface-2 hover:text-accent-text"
+            >
+              <ExternalLink className="size-3.5" />
+            </a>
+          )}
           {p.notes && <StickyNote className="size-3.5 shrink-0 text-subtle" aria-label="Has notes" />}
           {p.startDate && (
             <span className="flex shrink-0 items-center gap-1" title={`Started ${formatDate(p.startDate)}`}>

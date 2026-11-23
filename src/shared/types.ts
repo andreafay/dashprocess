@@ -37,6 +37,8 @@ export interface ProcessInput {
   payCurrency: string
   payPeriod: PayPeriod
   notes: string
+  /** Link to the job ad, or '' when there is none. */
+  jobUrl: string
 }
 
 export interface Process extends ProcessInput {

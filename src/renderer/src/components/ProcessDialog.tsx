@@ -56,7 +56,8 @@ export function ProcessDialog() {
         payMax: '',
         payCurrency: 'EUR',
         payPeriod: 'year',
-        notes: ''
+        notes: '',
+        jobUrl: ''
       })
     }
     // Only when the dialog target changes, not on every store update.
@@ -257,6 +258,17 @@ export function ProcessDialog() {
             onChange={(e) => set({ notes: e.target.value })}
             placeholder="Recruiter, tech stack, impressions…"
             rows={3}
+          />
+        </Field>
+
+        <Field label="Job ad link" htmlFor="job-url">
+          <Input
+            id="job-url"
+            inputMode="url"
+            spellCheck={false}
+            value={form.jobUrl}
+            onChange={(e) => set({ jobUrl: e.target.value })}
+            placeholder="https://company.com/careers/backend-engineer"
           />
         </Field>
 

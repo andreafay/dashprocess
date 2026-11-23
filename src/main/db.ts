@@ -60,6 +60,9 @@ const MIGRATIONS: ((db: DatabaseSync) => void)[] = [
       UPDATE processes SET company_type = 'consulting' WHERE consulting = 1;
       ALTER TABLE processes DROP COLUMN consulting;
     `)
+  },
+  (db) => {
+    db.exec("ALTER TABLE processes ADD COLUMN job_url TEXT NOT NULL DEFAULT ''")
   }
 ]
 

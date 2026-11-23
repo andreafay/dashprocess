@@ -36,7 +36,7 @@ export default function App() {
           <div className="flex size-5 items-center justify-center rounded-md bg-accent text-accent-fg">
             <Briefcase className="size-3" />
           </div>
-          <span className="text-[13px] font-semibold tracking-tight text-muted">Hiring</span>
+          <span className="text-[13px] font-semibold tracking-tight text-muted">Dashprocess</span>
         </header>
 
         <div className="flex items-end justify-between gap-4 px-7 pt-3 pb-5">
@@ -55,7 +55,7 @@ export default function App() {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 onKeyDown={(e) => e.key === 'Escape' && setSearch('')}
-                placeholder="Search company, role, notes…"
+                placeholder="Search"
                 className="pl-9"
               />
             </div>
