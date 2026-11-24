@@ -18,7 +18,7 @@ import {
 import { arrayMove, sortableKeyboardCoordinates } from '@dnd-kit/sortable'
 import { StageColumn } from './StageColumn'
 import { ProcessCard } from './ProcessCard'
-import { byPosition, matchesSearch, useStore } from '@/store'
+import { byPosition, isVisible, useStore } from '@/store'
 import { parseDndId as parseId } from '@/lib/dnd'
 
 /** Visible process ids per stage id. */
@@ -28,16 +28,18 @@ export function Board() {
   const stages = useStore((s) => s.stages)
   const processes = useStore((s) => s.processes)
   const search = useStore((s) => s.search)
+  const filters = useStore((s) => s.filters)
+  const filtersSidebar = useStore((s) => s.filtersSidebar)
   const moveProcess = useStore((s) => s.moveProcess)
 
   const columns = useMemo<Columns>(() => {
     const result: Columns = {}
     for (const st of stages) result[st.id] = []
     for (const p of byPosition(processes)) {
-      if (matchesSearch(p, search)) result[p.stageId]?.push(p.id)
+      if (isVisible(p, { search, filters, filtersSidebar })) result[p.stageId]?.push(p.id)
     }
     return result
-  }, [stages, processes, search])
+  }, [stages, processes, search, filters, filtersSidebar])
 
   // While dragging, the board renders this local copy so cards can hop between columns.
   const [dragColumns, setDragColumns] = useState<Columns | null>(null)

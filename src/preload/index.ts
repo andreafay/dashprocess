@@ -19,7 +19,9 @@ const api: Api = {
   settings: {
     initialTheme: ipcRenderer.sendSync('settings:getThemeSync'),
     getTheme: () => ipcRenderer.invoke('settings:getTheme'),
-    setTheme: (theme) => ipcRenderer.invoke('settings:setTheme', theme)
+    setTheme: (theme) => ipcRenderer.invoke('settings:setTheme', theme),
+    initialFiltersSidebar: ipcRenderer.sendSync('settings:getFiltersSidebarSync'),
+    setFiltersSidebar: (on) => ipcRenderer.invoke('settings:setFiltersSidebar', on)
   }
 }
 

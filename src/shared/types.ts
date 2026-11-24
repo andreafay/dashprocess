@@ -70,5 +70,8 @@ export interface Api {
     initialTheme: Theme
     getTheme(): Promise<Theme>
     setTheme(theme: Theme): Promise<void>
+    /** Whether the filters sidebar is shown, read synchronously like the theme. Off by default. */
+    initialFiltersSidebar: boolean
+    setFiltersSidebar(on: boolean): Promise<void>
   }
 }

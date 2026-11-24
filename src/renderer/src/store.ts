@@ -1,10 +1,28 @@
 import { create } from 'zustand'
-import type { Process, ProcessInput, Stage } from '@shared/types'
+import type { CompanyType, Process, ProcessInput, Region, Stage, Theme } from '@shared/types'
+import { applyTheme } from '@/lib/theme'
 import { processTags } from '@/lib/tags'
 import { errorMessage } from '@/lib/utils'
 
 /** What the process dialog is showing: nothing, a new process (optionally in a stage), or an existing one. */
 export type Editing = null | { mode: 'new'; stageId?: number } | { mode: 'edit'; id: number }
+
+/** Sidebar filters. 'any' means the filter is off. */
+export interface Filters {
+  status: 'any' | 'active' | 'ended'
+  workplace: 'any' | 'remote' | 'onsite'
+  contract: 'any' | 'b2b' | 'employee'
+  companyType: 'any' | CompanyType
+  region: 'any' | Region
+}
+
+export const NO_FILTERS: Filters = {
+  status: 'any',
+  workplace: 'any',
+  contract: 'any',
+  companyType: 'any',
+  region: 'any'
+}
 
 interface State {
   stages: Stage[]
@@ -15,9 +33,18 @@ interface State {
   stagesDialogOpen: boolean
   deletingStageId: number | null
   toast: string | null
+  settingsOpen: boolean
+  theme: Theme
+  filtersSidebar: boolean
+  filters: Filters
 
   load(): Promise<void>
   setSearch(search: string): void
+  openSettings(open: boolean): void
+  setTheme(theme: Theme): void
+  setFiltersSidebar(on: boolean): void
+  setFilter<K extends keyof Filters>(key: K, value: Filters[K]): void
+  clearFilters(): void
   openEditor(editing: Editing): void
   openStagesDialog(open: boolean): void
   askDeleteStage(id: number | null): void
@@ -47,6 +74,16 @@ export const useStore = create<State>((set, get) => {
     set({ stages, processes, loaded: true })
   }
 
+  /**
+   * Saves a setting in the background. Any failure, even a synchronous one, becomes a toast:
+   * these run inside UI event handlers, where a thrown error would take the whole page down.
+   */
+  function save(fn: () => Promise<unknown>): void {
+    Promise.resolve()
+      .then(fn)
+      .catch((err) => get().showError(err))
+  }
+
   /** Runs an API call; on failure shows the error and reloads so the UI matches the database. */
   async function run(fn: () => Promise<unknown>): Promise<boolean> {
     try {
@@ -68,9 +105,27 @@ export const useStore = create<State>((set, get) => {
     stagesDialogOpen: false,
     deletingStageId: null,
     toast: null,
+    settingsOpen: false,
+    theme: window.api.settings.initialTheme,
+    filtersSidebar: window.api.settings.initialFiltersSidebar === true,
+    filters: NO_FILTERS,
 
     load: () => run(reload).then(() => {}),
     setSearch: (search) => set({ search }),
+    openSettings: (open) => set({ settingsOpen: open }),
+    // Applies the theme right away and saves it. The main process also sets
+    // nativeTheme.themeSource so the title bar buttons match.
+    setTheme: (theme) => {
+      set({ theme })
+      applyTheme(theme)
+      save(() => window.api.settings.setTheme(theme))
+    },
+    setFiltersSidebar: (on) => {
+      set({ filtersSidebar: on })
+      save(() => window.api.settings.setFiltersSidebar(on))
+    },
+    setFilter: (key, value) => set((s) => ({ filters: { ...s.filters, [key]: value } })),
+    clearFilters: () => set({ filters: NO_FILTERS }),
     openEditor: (editing) => set({ editing }),
     openStagesDialog: (open) => set({ stagesDialogOpen: open }),
     askDeleteStage: (id) => set({ deletingStageId: id }),
@@ -179,4 +234,26 @@ export function matchesSearch(p: Process, search: string): boolean {
     .join(' ')
     .toLowerCase()
   return words.every((w) => text.includes(w))
+}
+
+export function matchesFilters(p: Process, f: Filters): boolean {
+  if (f.status === 'active' && isEnded(p)) return false
+  if (f.status === 'ended' && !isEnded(p)) return false
+  if (f.workplace !== 'any' && p.remote !== (f.workplace === 'remote')) return false
+  if (f.contract !== 'any' && p.b2b !== (f.contract === 'b2b')) return false
+  if (f.companyType !== 'any' && p.companyType !== f.companyType) return false
+  if (f.region !== 'any' && p.region !== f.region) return false
+  return true
+}
+
+export function activeFilterCount(f: Filters): number {
+  return Object.values(f).filter((v) => v !== 'any').length
+}
+
+/** Whether a card is shown on the board. Filters only apply while the sidebar is open. */
+export function isVisible(
+  p: Process,
+  s: Pick<State, 'search' | 'filters' | 'filtersSidebar'>
+): boolean {
+  return matchesSearch(p, s.search) && (!s.filtersSidebar || matchesFilters(p, s.filters))
 }

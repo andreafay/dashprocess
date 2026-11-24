@@ -320,3 +320,16 @@ export function setTheme(theme: Theme): void {
     .prepare("INSERT INTO settings (key, value) VALUES ('theme', ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value")
     .run(oneOf(theme, THEMES, 'theme'))
 }
+
+export function getFiltersSidebar(): boolean {
+  const row = getDb().prepare("SELECT value FROM settings WHERE key = 'filtersSidebar'").get() as
+    | { value: string }
+    | undefined
+  return row?.value === '1'
+}
+
+export function setFiltersSidebar(on: boolean): void {
+  getDb()
+    .prepare("INSERT INTO settings (key, value) VALUES ('filtersSidebar', ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value")
+    .run(on === true ? '1' : '0')
+}

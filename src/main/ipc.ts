@@ -27,4 +27,8 @@ export function registerIpc(): void {
     repo.setTheme(theme)
     nativeTheme.themeSource = repo.getTheme()
   })
+  ipcMain.on('settings:getFiltersSidebarSync', (e) => {
+    e.returnValue = repo.getFiltersSidebar()
+  })
+  ipcMain.handle('settings:setFiltersSidebar', (_e, on: boolean) => repo.setFiltersSidebar(on))
 }

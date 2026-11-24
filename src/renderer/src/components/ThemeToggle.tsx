@@ -1,8 +1,6 @@
-import { useState } from 'react'
 import { Monitor, Moon, Sun, type LucideIcon } from 'lucide-react'
 import type { Theme } from '@shared/types'
 import { cn } from '@/lib/utils'
-import { applyTheme } from '@/lib/theme'
 import { useStore } from '@/store'
 
 const OPTIONS: { value: Theme; label: string; icon: LucideIcon }[] = [
@@ -11,19 +9,9 @@ const OPTIONS: { value: Theme; label: string; icon: LucideIcon }[] = [
   { value: 'system', label: 'Match system theme', icon: Monitor }
 ]
 
-/**
- * Applies the theme to the page right away, and saves it in the database. The main process
- * also sets nativeTheme.themeSource so the title bar buttons match.
- */
 export function ThemeToggle() {
-  const [theme, setTheme] = useState<Theme>(window.api.settings.initialTheme)
-  const showError = useStore((s) => s.showError)
-
-  function choose(next: Theme) {
-    setTheme(next)
-    applyTheme(next)
-    window.api.settings.setTheme(next).catch(showError)
-  }
+  const theme = useStore((s) => s.theme)
+  const choose = useStore((s) => s.setTheme)
 
   return (
     <div
