@@ -4,10 +4,15 @@ directories:
   buildResources: build
 files:
   - out/**
+  - resources/**
   - package.json
 asar: true
+# The window icon is read from resources/ at runtime, so keep it outside the archive.
+asarUnpack:
+  - resources/**
 win:
   executableName: hiring-dashboard
+  icon: resources/icon.ico
   target: nsis
 nsis:
   artifactName: ${name}-${version}-setup.${ext}

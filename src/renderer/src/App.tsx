@@ -1,5 +1,5 @@
 import { useEffect, useMemo } from 'react'
-import { AlertCircle, Briefcase, Columns3, Plus, Search, Settings, X } from 'lucide-react'
+import { AlertCircle, Columns3, Plus, Search, Settings, X } from 'lucide-react'
 import { StatsBar } from './components/StatsBar'
 import { Board } from './components/Board'
 import { ProcessDialog } from './components/ProcessDialog'
@@ -11,6 +11,7 @@ import { SettingsDialog } from './components/SettingsDialog'
 import { FiltersSidebar } from './components/FiltersSidebar'
 import { activeFilterCount, isVisible, useStore } from './store'
 import { useT } from './lib/i18n'
+import logo from '../../../resources/icon.svg'
 
 export default function App() {
   const t = useT()
@@ -38,10 +39,8 @@ export default function App() {
   return (
     <div className="flex h-full flex-col">
       {/* Title bar: draggable, leaves room on the right for the window controls. */}
-      <header className="drag flex h-10 shrink-0 items-center gap-2.5 pr-40 pl-7">
-        <div className="flex size-5 items-center justify-center rounded-md bg-accent text-accent-fg">
-          <Briefcase className="size-3" />
-        </div>
+      <header className="drag flex h-10 shrink-0 items-center gap-2 pr-40 pl-6">
+        <img src={logo} alt="" className="size-6" draggable={false} />
         <span className="text-[13px] font-semibold tracking-tight text-muted">Dashprocess</span>
       </header>
 

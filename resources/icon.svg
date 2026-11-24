@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- Dashprocess logo: a dark grey "D" dashing to the left on the app's yellow.
+       Used for the title bar logo, and by `npm run icons` for the window and installer icons.
+       icon-16.svg and icon-24.svg are pixel-grid copies for small sizes: keep them in step. -->
+  <rect width="64" height="64" rx="14" fill="#facc15"/>
+  <!-- Speed lines trailing behind the letter. -->
+  <g stroke="#2b2f36" stroke-linecap="round" stroke-width="3.5">
+    <path d="M46 23.5h5" opacity="0.75"/>
+    <path d="M46.5 32h10"/>
+    <path d="M46 40.5h5" opacity="0.75"/>
+  </g>
+  <!-- The D, shifted left and leaning forward (top ahead) as if it's moving fast. -->
+  <path
+    fill="#2b2f36"
+    fill-rule="evenodd"
+    transform="translate(32 32) skewX(12) translate(-32 -32)"
+    d="M9 15h15a17 17 0 0 1 0 34H9zm8 8v18h6.5a9 9 0 0 0 0-18z"
+  />
+</svg>

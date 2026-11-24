@@ -3,6 +3,8 @@ import { join } from 'node:path'
 import { registerIpc } from './ipc'
 import { closeDb, getDb } from './db'
 import { getLanguage, getTheme } from './repo'
+import iconPng from '../../resources/icon.png?asset'
+import iconIco from '../../resources/icon.ico?asset'
 
 // Must match --bg in src/renderer/src/index.css.
 const BG = { light: '#f6f7f9', dark: '#1d2129' }
@@ -25,6 +27,8 @@ function createWindow(): void {
     titleBarStyle: 'hidden',
     titleBarOverlay: { ...overlayColors(), height: 40 },
     autoHideMenuBar: true,
+    // Windows picks the sharp hand-tuned size it needs from the .ico; scaling the PNG looks rough.
+    icon: process.platform === 'win32' ? iconIco : iconPng,
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
       contextIsolation: true,
@@ -60,6 +64,8 @@ function createWindow(): void {
 app.commandLine.appendSwitch('lang', getLanguage() === 'it' ? 'it' : 'en-GB')
 
 app.whenReady().then(() => {
+  // Groups the app's windows under its own taskbar entry (and icon) on Windows.
+  if (process.platform === 'win32') app.setAppUserModelId('com.hpdashboard.app')
   getDb()
   // Applying the saved theme here makes the renderer's prefers-color-scheme follow it.
   nativeTheme.themeSource = getTheme()

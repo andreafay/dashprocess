@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+  <!-- icon.svg redrawn on a 24px grid so edges land on whole pixels. Used for the 24 and 48px icons. -->
+  <rect width="24" height="24" rx="5" fill="#facc15"/>
+  <g fill="#2b2f36">
+    <rect x="18" y="7" width="3" height="2" rx="1" opacity="0.75"/>
+    <rect x="18" y="11" width="4" height="2" rx="1"/>
+    <rect x="18" y="15" width="3" height="2" rx="1" opacity="0.75"/>
+    <path
+      fill-rule="evenodd"
+      transform="translate(12 12) skewX(12) translate(-12 -12)"
+      d="M3 5h6.5a7 7 0 0 1 0 14H3zm3 3v8h3.5a4 4 0 0 0 0-8z"
+    />
+  </g>
+</svg>
