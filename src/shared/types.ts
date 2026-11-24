@@ -115,6 +115,9 @@ export interface Api {
     /** Whether the filters sidebar is shown, read synchronously like the theme. Off by default. */
     initialFiltersSidebar: boolean
     setFiltersSidebar(on: boolean): Promise<void>
+    /** Whether rejected and withdrawn processes are shown on the board. Off by default. */
+    initialShowEnded: boolean
+    setShowEnded(on: boolean): Promise<void>
     /** Saved sidebar filters, read synchronously so the board is filtered from the first paint. */
     initialFilters: Filters
     setFilters(filters: Filters): Promise<void>

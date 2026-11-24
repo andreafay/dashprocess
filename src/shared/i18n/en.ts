@@ -165,14 +165,12 @@ export const en = {
   settings: {
     title: 'Settings',
     theme: 'Theme',
-    themeDescription: 'Light, dark, or match your system.',
     light: 'Light theme',
     dark: 'Dark theme',
     system: 'Match system theme',
     filtersSidebar: 'Filters sidebar',
-    filtersSidebarDescription: 'Show filters next to the board.',
-    language: 'Language',
-    languageDescription: 'Used for all text in the app.'
+    showEnded: 'Show ended processes',
+    language: 'Language'
   },
 
   crash: {

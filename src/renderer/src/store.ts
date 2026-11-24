@@ -29,6 +29,7 @@ interface State {
   theme: Theme
   language: Language
   filtersSidebar: boolean
+  showEnded: boolean
   filters: Filters
 
   load(): Promise<void>
@@ -37,6 +38,7 @@ interface State {
   setTheme(theme: Theme): void
   setLanguage(language: Language): void
   setFiltersSidebar(on: boolean): void
+  setShowEnded(on: boolean): void
   setFilter<K extends keyof Filters>(key: K, value: Filters[K]): void
   clearFilters(): void
   openEditor(editing: Editing): void
@@ -106,6 +108,7 @@ export const useStore = create<State>((set, get) => {
       ? window.api.settings.initialLanguage
       : 'en',
     filtersSidebar: window.api.settings.initialFiltersSidebar === true,
+    showEnded: window.api.settings.initialShowEnded === true,
     // `??` guards against a preload from before filters were saved (a stale `npm run dev`).
     filters: window.api.settings.initialFilters ?? NO_FILTERS,
 
@@ -123,6 +126,10 @@ export const useStore = create<State>((set, get) => {
       set({ language })
       document.documentElement.lang = language
       save(() => window.api.settings.setLanguage(language))
+    },
+    setShowEnded: (on) => {
+      set({ showEnded: on })
+      save(() => window.api.settings.setShowEnded(on))
     },
     setFiltersSidebar: (on) => {
       set({ filtersSidebar: on })
@@ -279,10 +286,23 @@ export function activeFilterCount(f: Filters): number {
   return Object.values(f).filter((v) => v !== 'any').length
 }
 
-/** Whether a card is shown on the board. Filters only apply while the sidebar is open. */
-export function isVisible(
-  p: Process,
-  s: Pick<State, 'search' | 'filters' | 'filtersSidebar'>
-): boolean {
-  return matchesSearch(p, s.search) && (!s.filtersSidebar || matchesFilters(p, s.filters))
+type Visibility = Pick<State, 'search' | 'filters' | 'filtersSidebar' | 'showEnded'>
+
+/** Whether a process belongs on the board at all: ended ones only with "Show ended processes". */
+export function onBoard(p: Process, showEnded: boolean): boolean {
+  return showEnded || !isEnded(p)
+}
+
+/**
+ * The filters that actually apply. Filters only work while the sidebar is open, and the status
+ * filter only while ended processes are shown (otherwise every card is active anyway).
+ */
+export function effectiveFilters(s: Omit<Visibility, 'search'>): Filters {
+  if (!s.filtersSidebar) return NO_FILTERS
+  return s.showEnded ? s.filters : { ...s.filters, status: 'any' }
+}
+
+/** Whether a card is shown on the board. */
+export function isVisible(p: Process, s: Visibility): boolean {
+  return onBoard(p, s.showEnded) && matchesSearch(p, s.search) && matchesFilters(p, effectiveFilters(s))
 }

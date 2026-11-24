@@ -164,14 +164,12 @@ export const it: Messages = {
   settings: {
     title: 'Impostazioni',
     theme: 'Tema',
-    themeDescription: 'Chiaro, scuro o come il sistema.',
     light: 'Tema chiaro',
     dark: 'Tema scuro',
     system: 'Usa il tema di sistema',
     filtersSidebar: 'Barra dei filtri',
-    filtersSidebarDescription: 'Mostra i filtri accanto alla bacheca.',
-    language: 'Lingua',
-    languageDescription: 'Usata per tutti i testi dell’app.'
+    showEnded: 'Mostra processi conclusi',
+    language: 'Lingua'
   },
 
   crash: {

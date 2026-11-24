@@ -1,7 +1,7 @@
 import { SlidersHorizontal } from 'lucide-react'
 import { Segmented } from './ui/segmented'
 import type { Messages } from '@shared/i18n'
-import { activeFilterCount, useStore, type Filters } from '@/store'
+import { activeFilterCount, effectiveFilters, useStore, type Filters } from '@/store'
 import { useT } from '@/lib/i18n'
 
 type Option<K extends keyof Filters> = { value: Filters[K]; label: string }
@@ -57,7 +57,8 @@ export function FiltersSidebar() {
   const filters = useStore((s) => s.filters)
   const setFilter = useStore((s) => s.setFilter)
   const clearFilters = useStore((s) => s.clearFilters)
-  const count = activeFilterCount(filters)
+  const showEnded = useStore((s) => s.showEnded)
+  const count = activeFilterCount(effectiveFilters({ filters, filtersSidebar: true, showEnded }))
   const t = useT()
   const all = groups(t)
 
@@ -87,9 +88,16 @@ export function FiltersSidebar() {
         )}
       </div>
 
-      {(Object.keys(all) as (keyof Filters)[]).map((key) => (
-        <FilterGroup key={key} group={all[key]} value={filters[key]} onChange={(v) => setFilter(key, v)} />
-      ))}
+      {(Object.keys(all) as (keyof Filters)[])
+        .filter((key) => showEnded || key !== 'status')
+        .map((key) => (
+          <FilterGroup
+            key={key}
+            group={all[key]}
+            value={filters[key]}
+            onChange={(v) => setFilter(key, v)}
+          />
+        ))}
     </aside>
   )
 }

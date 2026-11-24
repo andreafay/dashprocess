@@ -35,6 +35,10 @@ export function registerIpc(): void {
     e.returnValue = repo.getFiltersSidebar()
   })
   ipcMain.handle('settings:setFiltersSidebar', (_e, on: boolean) => repo.setFiltersSidebar(on))
+  ipcMain.on('settings:getShowEndedSync', (e) => {
+    e.returnValue = repo.getShowEnded()
+  })
+  ipcMain.handle('settings:setShowEnded', (_e, on: boolean) => repo.setShowEnded(on))
   ipcMain.on('settings:getLanguageSync', (e) => {
     e.returnValue = repo.getLanguage()
   })

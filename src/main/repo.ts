@@ -424,3 +424,17 @@ export function setLanguage(language: Language): void {
     .prepare("INSERT INTO settings (key, value) VALUES ('language', ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value")
     .run(language)
 }
+
+/** Whether rejected and withdrawn processes are shown on the board. Off by default. */
+export function getShowEnded(): boolean {
+  const row = getDb().prepare("SELECT value FROM settings WHERE key = 'showEnded'").get() as
+    | { value: string }
+    | undefined
+  return row?.value === '1'
+}
+
+export function setShowEnded(on: boolean): void {
+  getDb()
+    .prepare("INSERT INTO settings (key, value) VALUES ('showEnded', ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value")
+    .run(on === true ? '1' : '0')
+}

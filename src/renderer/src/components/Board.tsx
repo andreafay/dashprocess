@@ -18,7 +18,7 @@ import {
 import { arrayMove, sortableKeyboardCoordinates } from '@dnd-kit/sortable'
 import { StageColumn } from './StageColumn'
 import { ProcessCard } from './ProcessCard'
-import { byPosition, isVisible, useStore } from '@/store'
+import { byPosition, isVisible, onBoard, useStore } from '@/store'
 import { parseDndId as parseId } from '@/lib/dnd'
 
 /** Visible process ids per stage id. */
@@ -30,16 +30,17 @@ export function Board() {
   const search = useStore((s) => s.search)
   const filters = useStore((s) => s.filters)
   const filtersSidebar = useStore((s) => s.filtersSidebar)
+  const showEnded = useStore((s) => s.showEnded)
   const moveProcess = useStore((s) => s.moveProcess)
 
   const columns = useMemo<Columns>(() => {
     const result: Columns = {}
     for (const st of stages) result[st.id] = []
     for (const p of byPosition(processes)) {
-      if (isVisible(p, { search, filters, filtersSidebar })) result[p.stageId]?.push(p.id)
+      if (isVisible(p, { search, filters, filtersSidebar, showEnded })) result[p.stageId]?.push(p.id)
     }
     return result
-  }, [stages, processes, search, filters, filtersSidebar])
+  }, [stages, processes, search, filters, filtersSidebar, showEnded])
 
   // While dragging, the board renders this local copy so cards can hop between columns.
   const [dragColumns, setDragColumns] = useState<Columns | null>(null)
@@ -158,7 +159,9 @@ export function Board() {
             key={stage.id}
             stage={stage}
             processes={(shown[stage.id] ?? []).map((id) => byId.get(id)!).filter(Boolean)}
-            totalCount={processes.filter((p) => p.stageId === stage.id).length}
+            totalCount={
+              processes.filter((p) => p.stageId === stage.id && onBoard(p, showEnded)).length
+            }
           />
         ))}
       </div>

@@ -9,7 +9,7 @@ import { Button } from './components/ui/button'
 import { Input } from './components/ui/input'
 import { SettingsDialog } from './components/SettingsDialog'
 import { FiltersSidebar } from './components/FiltersSidebar'
-import { activeFilterCount, isVisible, useStore } from './store'
+import { activeFilterCount, effectiveFilters, isVisible, onBoard, useStore } from './store'
 import { useT } from './lib/i18n'
 import logo from '../../../resources/icon.svg'
 
@@ -25,16 +25,21 @@ export default function App() {
   const openSettings = useStore((s) => s.openSettings)
   const filters = useStore((s) => s.filters)
   const filtersSidebar = useStore((s) => s.filtersSidebar)
+  const showEnded = useStore((s) => s.showEnded)
 
   useEffect(() => {
     load()
   }, [load])
 
   const visibleCount = useMemo(
-    () => processes.filter((p) => isVisible(p, { search, filters, filtersSidebar })).length,
-    [processes, search, filters, filtersSidebar]
+    () =>
+      processes.filter((p) => isVisible(p, { search, filters, filtersSidebar, showEnded })).length,
+    [processes, search, filters, filtersSidebar, showEnded]
   )
-  const narrowed = search.trim() !== '' || (filtersSidebar && activeFilterCount(filters) > 0)
+  const boardCount = processes.filter((p) => onBoard(p, showEnded)).length
+  const narrowed =
+    search.trim() !== '' ||
+    activeFilterCount(effectiveFilters({ filters, filtersSidebar, showEnded })) > 0
 
   return (
     <div className="flex h-full flex-col">
@@ -53,7 +58,7 @@ export default function App() {
               <p className="mt-0.5 text-[13px] text-muted">
                 {loaded
                   ? narrowed
-                    ? t.app.shown(visibleCount, processes.length)
+                    ? t.app.shown(visibleCount, boardCount)
                     : t.app.onBoard(visibleCount)
                   : t.app.loading}
               </p>
