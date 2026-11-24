@@ -1,6 +1,6 @@
 # Dashprocess
 
-A desktop Kanban board for tracking hiring processes. Built with Electron, React, TypeScript, Tailwind and SQLite.
+A desktop Kanban board built for candidates to track hiring processes. Built with Electron, React, TypeScript, Tailwind and SQLite.
 
 ## Requirements
 
