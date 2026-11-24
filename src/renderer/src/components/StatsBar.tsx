@@ -1,10 +1,13 @@
 import { useMemo } from 'react'
 import { Activity, CalendarPlus, CircleSlash, Trophy, type LucideIcon } from 'lucide-react'
 import { isEnded, useStore } from '@/store'
+import { useStageLabel, useT } from '@/lib/i18n'
 
 export function StatsBar() {
   const processes = useStore((s) => s.processes)
   const stages = useStore((s) => s.stages)
+  const t = useT()
+  const label = useStageLabel()
 
   const stats = useMemo(() => {
     const active = processes.filter((p) => !isEnded(p))
@@ -13,7 +16,7 @@ export function StatsBar() {
     return {
       active: active.length,
       offers: lastStage ? active.filter((p) => p.stageId === lastStage.id).length : 0,
-      offerLabel: lastStage?.name ?? 'Offer',
+      lastStage,
       recent: processes.filter((p) => p.startDate && p.startDate >= monthAgo).length,
       ended: processes.length - active.length
     }
@@ -21,22 +24,22 @@ export function StatsBar() {
 
   return (
     <div className="grid grid-cols-4 gap-3 px-7 pb-5">
-      <Stat icon={Activity} label="Active processes" value={stats.active} tone="text-accent-text bg-accent-soft" />
+      <Stat icon={Activity} label={t.stats.active} value={stats.active} tone="text-accent-text bg-accent-soft" />
       <Stat
         icon={Trophy}
-        label={`At ${stats.offerLabel}`}
+        label={t.stats.atStage(stats.lastStage ? label(stats.lastStage) : '')}
         value={stats.offers}
         tone="text-emerald-600 dark:text-emerald-400 bg-emerald-500/10"
       />
       <Stat
         icon={CalendarPlus}
-        label="Started in last 30 days"
+        label={t.stats.startedRecently}
         value={stats.recent}
         tone="text-sky-600 dark:text-sky-400 bg-sky-500/10"
       />
       <Stat
         icon={CircleSlash}
-        label="Ended"
+        label={t.stats.ended}
         value={stats.ended}
         tone="text-muted bg-surface-2"
       />

@@ -1,3 +1,18 @@
+import type { Language } from './i18n'
+
+/** Built-in stages. Their names come from the language files, so they are translated. */
+export const STAGE_PRESETS = [
+  'applied',
+  'screening',
+  'hr_interview',
+  'technical_interview',
+  'home_assignment',
+  'final_interview',
+  'reference_check',
+  'offer'
+] as const
+export type StagePreset = (typeof STAGE_PRESETS)[number]
+
 export const STATUSES = ['active', 'rejected', 'withdrawn'] as const
 export type Status = (typeof STATUSES)[number]
 
@@ -36,9 +51,14 @@ export const CURRENCIES = ['EUR', 'USD', 'GBP', 'CHF'] as const
 
 export interface Stage {
   id: number
+  /** The name typed by the user. For a preset stage that hasn't been renamed, see `stageLabel`. */
   name: string
   position: number
   color: string | null
+  /** Which built-in stage this is, or null for a stage with a custom name. */
+  preset: StagePreset | null
+  /** True when a preset stage was given its own name; then `name` is shown instead. */
+  renamed: boolean
 }
 
 export interface ProcessInput {
@@ -70,8 +90,11 @@ export interface Process extends ProcessInput {
 export interface Api {
   stages: {
     list(): Promise<Stage[]>
-    create(name: string): Promise<Stage>
+    /** Adds a preset stage (`preset` set, `name` ignored) or a custom one (`preset` null). */
+    create(name: string, preset: StagePreset | null): Promise<Stage>
     rename(id: number, name: string): Promise<void>
+    /** Gives a renamed preset stage back its translated name. */
+    resetName(id: number): Promise<void>
     reorder(ids: number[]): Promise<void>
     /** Deletes a stage. If it has processes, they are moved to `moveTo` first. */
     remove(id: number, moveTo: number | null): Promise<void>
@@ -95,5 +118,8 @@ export interface Api {
     /** Saved sidebar filters, read synchronously so the board is filtered from the first paint. */
     initialFilters: Filters
     setFilters(filters: Filters): Promise<void>
+    /** Interface language, read synchronously so the first paint is in the right language. */
+    initialLanguage: Language
+    setLanguage(language: Language): Promise<void>
   }
 }

@@ -6,14 +6,17 @@ import {
   NO_FILTERS,
   PAY_PERIODS,
   REGIONS,
+  STAGE_PRESETS,
   STATUSES,
   THEMES,
   type Filters,
   type Process,
   type ProcessInput,
   type Stage,
+  type StagePreset,
   type Theme
 } from '@shared/types'
+import { isLanguage, LANGUAGES, messages, type Language, type Messages } from '@shared/i18n'
 
 // ---------- Stages ----------
 
@@ -22,36 +25,74 @@ interface StageRow {
   name: string
   position: number
   color: string | null
+  preset: StagePreset | null
+  renamed: number
+}
+
+function toStage(r: StageRow): Stage {
+  return { ...r, renamed: !!r.renamed }
 }
 
 export function listStages(): Stage[] {
   const rows = getDb()
-    .prepare('SELECT id, name, position, color FROM stages ORDER BY position, id')
+    .prepare('SELECT id, name, position, color, preset, renamed FROM stages ORDER BY position, id')
     .all() as unknown as StageRow[]
-  return rows.map((r) => ({ ...r }))
+  return rows.map(toStage)
 }
 
-export function createStage(name: string): Stage {
-  const clean = requireText(name, 'Stage name')
+export function createStage(name: string, preset: StagePreset | null): Stage {
+  // A preset stage stores its English name too, so the column is never empty.
+  const p = preset == null ? null : oneOf(preset, STAGE_PRESETS, t().errors.fields.stagePreset)
+  const clean = p ? messages('en').stagePresets[p] : requireText(name, t().errors.fields.stageName)
   const db = getDb()
   const { next } = db
     .prepare('SELECT COALESCE(MAX(position), -1) + 1 AS next FROM stages')
     .get() as { next: number }
   const { lastInsertRowid } = db
-    .prepare('INSERT INTO stages (name, position) VALUES (?, ?)')
-    .run(clean, next)
-  return { id: Number(lastInsertRowid), name: clean, position: next, color: null }
+    .prepare('INSERT INTO stages (name, position, preset) VALUES (?, ?, ?)')
+    .run(clean, next, p)
+  return { id: Number(lastInsertRowid), name: clean, position: next, color: null, preset: p, renamed: false }
 }
 
+/**
+ * A preset stage renamed to its own preset name (in any language) goes back to being translated;
+ * any other name is kept exactly as typed.
+ */
 export function renameStage(id: number, name: string): void {
-  getDb().prepare('UPDATE stages SET name = ? WHERE id = ?').run(requireText(name, 'Stage name'), id)
+  const clean = requireText(name, t().errors.fields.stageName)
+  const db = getDb()
+  const row = db.prepare('SELECT preset FROM stages WHERE id = ?').get(id) as
+    | { preset: StagePreset | null }
+    | undefined
+  if (!row) throw new Error(t().errors.stageNotFound(id))
+  const isPresetName =
+    row.preset != null &&
+    LANGUAGES.some((l) => messages(l).stagePresets[row.preset!].toLowerCase() === clean.toLowerCase())
+  db.prepare('UPDATE stages SET name = ?, renamed = ? WHERE id = ?').run(
+    isPresetName ? messages('en').stagePresets[row.preset!] : clean,
+    isPresetName ? 0 : 1,
+    id
+  )
+}
+
+export function resetStageName(id: number): void {
+  const db = getDb()
+  const row = db.prepare('SELECT preset FROM stages WHERE id = ?').get(id) as
+    | { preset: StagePreset | null }
+    | undefined
+  if (!row) throw new Error(t().errors.stageNotFound(id))
+  if (!row.preset) return
+  db.prepare('UPDATE stages SET name = ?, renamed = 0 WHERE id = ?').run(
+    messages('en').stagePresets[row.preset],
+    id
+  )
 }
 
 export function reorderStages(ids: number[]): void {
   const db = getDb()
   const existing = listStages().map((s) => s.id)
   if (ids.length !== existing.length || !existing.every((id) => ids.includes(id))) {
-    throw new Error('Stage order must contain every stage exactly once')
+    throw new Error(t().errors.stageOrder)
   }
   const update = db.prepare('UPDATE stages SET position = ? WHERE id = ?')
   transaction(db, () => ids.forEach((id, i) => update.run(i, id)))
@@ -61,14 +102,14 @@ export function deleteStage(id: number, moveTo: number | null): void {
   const db = getDb()
   transaction(db, () => {
     const { total } = db.prepare('SELECT COUNT(*) AS total FROM stages').get() as { total: number }
-    if (total <= 1) throw new Error('You need at least one stage')
+    if (total <= 1) throw new Error(t().errors.lastStage)
 
     const { count } = db
       .prepare('SELECT COUNT(*) AS count FROM processes WHERE stage_id = ?')
       .get(id) as { count: number }
     if (count > 0) {
       if (moveTo == null || moveTo === id) {
-        throw new Error('Choose a stage to move this stage’s processes to')
+        throw new Error(t().errors.moveTarget)
       }
       // Append the moved processes after the ones already in the target stage.
       const { base } = db
@@ -143,7 +184,7 @@ function getProcess(id: number): Process {
   const row = getDb().prepare('SELECT * FROM processes WHERE id = ?').get(id) as
     | ProcessRow
     | undefined
-  if (!row) throw new Error(`Process ${id} not found`)
+  if (!row) throw new Error(t().errors.processNotFound(id))
   return toProcess(row)
 }
 
@@ -211,7 +252,7 @@ function moveInTx(id: number, stageId: number, index: number): void {
   const db = getDb()
   const from = getProcess(id).stageId
   if (!db.prepare('SELECT 1 FROM stages WHERE id = ?').get(stageId)) {
-    throw new Error(`Stage ${stageId} not found`)
+    throw new Error(t().errors.stageNotFound(stageId))
   }
   const ids = (
     db
@@ -243,21 +284,26 @@ function renumber(table: 'stages' | 'processes', stageId: number | null): void {
 
 // ---------- Validation ----------
 
+/** Error texts in the language the user picked. */
+function t(): Messages {
+  return messages(getLanguage())
+}
+
 function requireText(value: unknown, label: string): string {
   const s = typeof value === 'string' ? value.trim() : ''
-  if (!s) throw new Error(`${label} is required`)
+  if (!s) throw new Error(t().errors.required(label))
   return s
 }
 
 function optionalAmount(value: unknown, label: string): number | null {
   if (value == null || value === '') return null
   const n = Number(value)
-  if (!Number.isFinite(n) || n < 0) throw new Error(`${label} must be a positive number`)
+  if (!Number.isFinite(n) || n < 0) throw new Error(t().errors.positive(label))
   return Math.round(n)
 }
 
 function oneOf<T extends string>(value: unknown, allowed: readonly T[], label: string): T {
-  if (!allowed.includes(value as T)) throw new Error(`Invalid ${label}`)
+  if (!allowed.includes(value as T)) throw new Error(t().errors.invalid(label))
   return value as T
 }
 
@@ -270,40 +316,40 @@ function optionalUrl(value: unknown): string {
   try {
     url = new URL(withScheme)
   } catch {
-    throw new Error('Job ad link must be a web address')
+    throw new Error(t().errors.jobUrl)
   }
   if ((url.protocol !== 'http:' && url.protocol !== 'https:') || !url.hostname.includes('.')) {
-    throw new Error('Job ad link must be a web address')
+    throw new Error(t().errors.jobUrl)
   }
   return url.href
 }
 
 function validate(input: ProcessInput): ProcessInput {
-  const payMin = optionalAmount(input.payMin, 'Minimum pay')
-  const payMax = optionalAmount(input.payMax, 'Maximum pay')
+  const payMin = optionalAmount(input.payMin, t().errors.fields.minPay)
+  const payMax = optionalAmount(input.payMax, t().errors.fields.maxPay)
   if (payMin != null && payMax != null && payMin > payMax) {
-    throw new Error('Minimum pay can’t be higher than maximum pay')
+    throw new Error(t().errors.payRange)
   }
   const startDate = input.startDate || null
-  if (startDate && !/^\d{4}-\d{2}-\d{2}$/.test(startDate)) throw new Error('Invalid start date')
+  if (startDate && !/^\d{4}-\d{2}-\d{2}$/.test(startDate)) throw new Error(t().errors.startDate)
   const stageId = Number(input.stageId)
   if (!getDb().prepare('SELECT 1 FROM stages WHERE id = ?').get(stageId)) {
-    throw new Error('Choose a stage')
+    throw new Error(t().errors.chooseStage)
   }
   return {
-    company: requireText(input.company, 'Company'),
-    role: requireText(input.role, 'Role'),
+    company: requireText(input.company, t().errors.fields.company),
+    role: requireText(input.role, t().errors.fields.role),
     stageId,
-    status: oneOf(input.status, STATUSES, 'status'),
+    status: oneOf(input.status, STATUSES, t().errors.fields.status),
     remote: !!input.remote,
     b2b: !!input.b2b,
-    companyType: oneOf(input.companyType, COMPANY_TYPES, 'company type'),
-    region: oneOf(input.region, REGIONS, 'region'),
+    companyType: oneOf(input.companyType, COMPANY_TYPES, t().errors.fields.companyType),
+    region: oneOf(input.region, REGIONS, t().errors.fields.region),
     startDate,
     payMin,
     payMax,
-    payCurrency: oneOf(input.payCurrency, CURRENCIES, 'currency'),
-    payPeriod: oneOf(input.payPeriod, PAY_PERIODS, 'pay period'),
+    payCurrency: oneOf(input.payCurrency, CURRENCIES, t().errors.fields.currency),
+    payPeriod: oneOf(input.payPeriod, PAY_PERIODS, t().errors.fields.payPeriod),
     notes: typeof input.notes === 'string' ? input.notes.trim() : '',
     jobUrl: optionalUrl(input.jobUrl)
   }
@@ -321,7 +367,7 @@ export function getTheme(): Theme {
 export function setTheme(theme: Theme): void {
   getDb()
     .prepare("INSERT INTO settings (key, value) VALUES ('theme', ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value")
-    .run(oneOf(theme, THEMES, 'theme'))
+    .run(oneOf(theme, THEMES, t().errors.fields.theme))
 }
 
 export function getFiltersSidebar(): boolean {
@@ -363,4 +409,18 @@ export function setFilters(filters: Filters): void {
   getDb()
     .prepare("INSERT INTO settings (key, value) VALUES ('filters', ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value")
     .run(JSON.stringify(cleanFilters(filters)))
+}
+
+export function getLanguage(): Language {
+  const row = getDb().prepare("SELECT value FROM settings WHERE key = 'language'").get() as
+    | { value: string }
+    | undefined
+  return isLanguage(row?.value) ? row.value : 'en'
+}
+
+export function setLanguage(language: Language): void {
+  if (!isLanguage(language)) throw new Error(t().errors.invalid(t().errors.fields.language))
+  getDb()
+    .prepare("INSERT INTO settings (key, value) VALUES ('language', ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value")
+    .run(language)
 }

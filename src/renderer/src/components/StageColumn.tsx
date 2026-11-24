@@ -2,13 +2,14 @@ import { useEffect, useRef, useState } from 'react'
 import { useDroppable } from '@dnd-kit/core'
 import { SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import { MoreHorizontal, Pencil, Plus, Trash2 } from 'lucide-react'
+import { MoreHorizontal, Pencil, Plus, RotateCcw, Trash2 } from 'lucide-react'
 import type { Process, Stage } from '@shared/types'
 import { ProcessCard } from './ProcessCard'
 import { cardDndId, columnDndId } from '@/lib/dnd'
 import { DropdownContent, DropdownItem, DropdownMenu, DropdownSeparator, DropdownTrigger } from './ui/dropdown'
 import { cn } from '@/lib/utils'
 import { useStore } from '@/store'
+import { useStageLabel, useT } from '@/lib/i18n'
 
 const STAGE_DOTS = ['#8b5cf6', '#3b82f6', '#f59e0b', '#ec4899', '#10b981', '#06b6d4', '#f97316', '#64748b']
 
@@ -24,10 +25,13 @@ interface Props {
 }
 
 export function StageColumn({ stage, processes, totalCount }: Props) {
+  const t = useT()
   const stages = useStore((s) => s.stages)
   const openEditor = useStore((s) => s.openEditor)
   const askDeleteStage = useStore((s) => s.askDeleteStage)
   const renameStage = useStore((s) => s.renameStage)
+  const resetStageName = useStore((s) => s.resetStageName)
+  const label = useStageLabel()(stage)
   const { setNodeRef, isOver } = useDroppable({ id: columnDndId(stage.id) })
   const [editing, setEditing] = useState(false)
 
@@ -37,19 +41,19 @@ export function StageColumn({ stage, processes, totalCount }: Props) {
         <span className="size-2 shrink-0 rounded-full" style={{ background: stageDot(stages, stage.id) }} />
         {editing ? (
           <RenameInput
-            initial={stage.name}
+            initial={label}
             onDone={(name) => {
               setEditing(false)
-              if (name && name !== stage.name) renameStage(stage.id, name)
+              if (name && name !== label) renameStage(stage.id, name)
             }}
           />
         ) : (
           <h3
             className="min-w-0 truncate text-[13px] font-semibold text-fg"
             onDoubleClick={() => setEditing(true)}
-            title="Double-click to rename"
+            title={t.column.renameHint}
           >
-            {stage.name}
+            {label}
           </h3>
         )}
         <span className="rounded-full bg-surface px-1.5 text-[11px] font-medium text-muted tabular-nums ring-1 ring-border">
@@ -59,20 +63,25 @@ export function StageColumn({ stage, processes, totalCount }: Props) {
         <DropdownMenu>
           <DropdownTrigger
             className="rounded-md p-1 text-subtle hover:bg-surface-2 hover:text-fg data-[state=open]:bg-surface-2"
-            aria-label={`${stage.name} options`}
+            aria-label={t.column.options(label)}
           >
             <MoreHorizontal className="size-4" />
           </DropdownTrigger>
           <DropdownContent>
             <DropdownItem onSelect={() => openEditor({ mode: 'new', stageId: stage.id })}>
-              <Plus /> Add process here
+              <Plus /> {t.column.addHere}
             </DropdownItem>
             <DropdownItem onSelect={() => setEditing(true)}>
-              <Pencil /> Rename stage
+              <Pencil /> {t.column.rename}
             </DropdownItem>
+            {stage.preset && stage.renamed && (
+              <DropdownItem onSelect={() => resetStageName(stage.id)}>
+                <RotateCcw /> {t.column.resetName}
+              </DropdownItem>
+            )}
             <DropdownSeparator />
             <DropdownItem danger onSelect={() => askDeleteStage(stage.id)}>
-              <Trash2 /> Delete stage
+              <Trash2 /> {t.column.delete}
             </DropdownItem>
           </DropdownContent>
         </DropdownMenu>
@@ -91,7 +100,7 @@ export function StageColumn({ stage, processes, totalCount }: Props) {
           ))}
           {processes.length === 0 && (
             <div className="flex h-20 items-center justify-center rounded-xl border border-dashed border-border-strong text-[12px] text-subtle">
-              {totalCount > 0 ? 'No matches' : 'Drop a process here'}
+              {totalCount > 0 ? t.column.noMatches : t.column.dropHere}
             </div>
           )}
         </div>
@@ -102,7 +111,7 @@ export function StageColumn({ stage, processes, totalCount }: Props) {
         className="mx-2 mb-2 flex h-8 items-center gap-1.5 rounded-lg px-2.5 text-[13px] font-medium text-muted hover:bg-surface hover:text-fg"
       >
         <Plus className="size-4" />
-        Add process
+        {t.column.addProcess}
       </button>
     </section>
   )

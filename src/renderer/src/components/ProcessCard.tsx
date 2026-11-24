@@ -3,6 +3,8 @@ import type { Process } from '@shared/types'
 import { Badge } from './ui/badge'
 import { formatDate, formatPay, sinceDate } from '@/lib/format'
 import { processTags } from '@/lib/tags'
+import { useT } from '@/lib/i18n'
+import { useStore } from '@/store'
 import { cn } from '@/lib/utils'
 
 const AVATAR_COLORS = [
@@ -36,7 +38,9 @@ interface Props {
 }
 
 export function ProcessCard({ process: p, overlay, placeholder }: Props) {
-  const pay = formatPay(p)
+  const t = useT()
+  const language = useStore((s) => s.language)
+  const pay = formatPay(p, language)
   const ended = p.status !== 'active'
 
   return (
@@ -60,17 +64,17 @@ export function ProcessCard({ process: p, overlay, placeholder }: Props) {
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-1.5">
             <h4 className="truncate text-[13.5px] leading-5 font-semibold text-fg">{p.company}</h4>
-            {p.status === 'rejected' && <Badge tone="rose">Rejected</Badge>}
-            {p.status === 'withdrawn' && <Badge>Withdrawn</Badge>}
+            {p.status === 'rejected' && <Badge tone="rose">{t.status.rejected}</Badge>}
+            {p.status === 'withdrawn' && <Badge>{t.status.withdrawn}</Badge>}
           </div>
           <p className="truncate text-[12.5px] leading-5 text-muted">{p.role}</p>
         </div>
       </div>
 
       <div className="mt-3 flex flex-wrap gap-1">
-        {processTags(p).map((t) => (
-          <Badge key={t.label} tone={t.tone}>
-            {t.label}
+        {processTags(p, t).map((tag) => (
+          <Badge key={tag.label} tone={tag.tone}>
+            {tag.label}
           </Badge>
         ))}
       </div>
@@ -89,8 +93,8 @@ export function ProcessCard({ process: p, overlay, placeholder }: Props) {
               href={p.jobUrl}
               target="_blank"
               rel="noreferrer"
-              title={`Open job ad: ${p.jobUrl}`}
-              aria-label="Open job ad"
+              title={t.card.openJobAdTitle(p.jobUrl)}
+              aria-label={t.card.openJobAd}
               // Don't start a drag or open the editor when clicking the link.
               onPointerDown={(e) => e.stopPropagation()}
               onClick={(e) => e.stopPropagation()}
@@ -100,11 +104,11 @@ export function ProcessCard({ process: p, overlay, placeholder }: Props) {
               <ExternalLink className="size-3.5" />
             </a>
           )}
-          {p.notes && <StickyNote className="size-3.5 shrink-0 text-subtle" aria-label="Has notes" />}
+          {p.notes && <StickyNote className="size-3.5 shrink-0 text-subtle" aria-label={t.card.hasNotes} />}
           {p.startDate && (
-            <span className="flex shrink-0 items-center gap-1" title={`Started ${formatDate(p.startDate)}`}>
+            <span className="flex shrink-0 items-center gap-1" title={t.card.started(formatDate(p.startDate, language) ?? '')}>
               <CalendarDays className="size-3.5 text-subtle" />
-              {sinceDate(p.startDate)}
+              {sinceDate(p.startDate, language)}
             </span>
           )}
         </div>

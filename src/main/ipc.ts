@@ -1,11 +1,15 @@
 import { ipcMain, nativeTheme } from 'electron'
-import type { Filters, Theme } from '@shared/types'
+import type { Filters, StagePreset, Theme } from '@shared/types'
+import type { Language } from '@shared/i18n'
 import * as repo from './repo'
 
 export function registerIpc(): void {
   ipcMain.handle('stages:list', () => repo.listStages())
-  ipcMain.handle('stages:create', (_e, name: string) => repo.createStage(name))
+  ipcMain.handle('stages:create', (_e, name: string, preset: StagePreset | null) =>
+    repo.createStage(name, preset)
+  )
   ipcMain.handle('stages:rename', (_e, id: number, name: string) => repo.renameStage(id, name))
+  ipcMain.handle('stages:resetName', (_e, id: number) => repo.resetStageName(id))
   ipcMain.handle('stages:reorder', (_e, ids: number[]) => repo.reorderStages(ids))
   ipcMain.handle('stages:remove', (_e, id: number, moveTo: number | null) =>
     repo.deleteStage(id, moveTo)
@@ -31,6 +35,10 @@ export function registerIpc(): void {
     e.returnValue = repo.getFiltersSidebar()
   })
   ipcMain.handle('settings:setFiltersSidebar', (_e, on: boolean) => repo.setFiltersSidebar(on))
+  ipcMain.on('settings:getLanguageSync', (e) => {
+    e.returnValue = repo.getLanguage()
+  })
+  ipcMain.handle('settings:setLanguage', (_e, language: Language) => repo.setLanguage(language))
   ipcMain.on('settings:getFiltersSync', (e) => {
     e.returnValue = repo.getFilters()
   })

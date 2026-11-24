@@ -1,6 +1,8 @@
 import { Component, type ErrorInfo, type ReactNode } from 'react'
 import { AlertTriangle, RotateCw } from 'lucide-react'
 import { Button } from './ui/button'
+import { messages } from '@shared/i18n'
+import { useStore } from '@/store'
 
 interface State {
   error: Error | null
@@ -21,6 +23,7 @@ export class ErrorBoundary extends Component<{ children: ReactNode }, State> {
   render(): ReactNode {
     const { error } = this.state
     if (!error) return this.props.children
+    const t = messages(useStore.getState().language)
     return (
       <div className="flex h-full flex-col">
         <div className="drag h-10 shrink-0" />
@@ -29,16 +32,16 @@ export class ErrorBoundary extends Component<{ children: ReactNode }, State> {
             <div className="flex size-10 items-center justify-center rounded-xl bg-danger-soft text-danger">
               <AlertTriangle className="size-5" />
             </div>
-            <h1 className="text-base font-semibold text-fg">Something went wrong</h1>
+            <h1 className="text-base font-semibold text-fg">{t.crash.title}</h1>
             <p className="text-[13px] text-muted">
-              The app hit an unexpected error. Your data is safe in the database. Reload to continue.
+              {t.crash.body}
             </p>
             <pre className="max-h-32 w-full overflow-auto rounded-lg bg-surface-2 px-3 py-2 text-left text-[12px] whitespace-pre-wrap text-muted">
               {error.message}
             </pre>
             <Button variant="primary" onClick={() => window.location.reload()}>
               <RotateCw />
-              Reload
+              {t.crash.reload}
             </Button>
           </div>
         </div>

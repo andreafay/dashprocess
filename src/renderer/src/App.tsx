@@ -10,8 +10,10 @@ import { Input } from './components/ui/input'
 import { SettingsDialog } from './components/SettingsDialog'
 import { FiltersSidebar } from './components/FiltersSidebar'
 import { activeFilterCount, isVisible, useStore } from './store'
+import { useT } from './lib/i18n'
 
 export default function App() {
+  const t = useT()
   const load = useStore((s) => s.load)
   const loaded = useStore((s) => s.loaded)
   const processes = useStore((s) => s.processes)
@@ -48,13 +50,13 @@ export default function App() {
         <main className="flex min-w-0 flex-1 flex-col">
           <div className="flex items-end justify-between gap-4 px-7 pt-3 pb-5">
             <div>
-              <h1 className="text-xl font-semibold tracking-tight text-fg">Hiring pipeline</h1>
+              <h1 className="text-xl font-semibold tracking-tight text-fg">{t.app.pipeline}</h1>
               <p className="mt-0.5 text-[13px] text-muted">
                 {loaded
                   ? narrowed
-                    ? `${visibleCount} of ${processes.length} processes shown`
-                    : `${visibleCount} ${visibleCount === 1 ? 'process' : 'processes'} on the board`
-                  : 'Loading…'}
+                    ? t.app.shown(visibleCount, processes.length)
+                    : t.app.onBoard(visibleCount)
+                  : t.app.loading}
               </p>
             </div>
             <div className="flex items-center gap-2">
@@ -64,7 +66,7 @@ export default function App() {
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   onKeyDown={(e) => e.key === 'Escape' && setSearch('')}
-                  placeholder="Search"
+                  placeholder={t.app.search}
                   className="pl-9"
                 />
               </div>
@@ -72,18 +74,18 @@ export default function App() {
                 size="icon"
                 className="size-9"
                 onClick={() => openSettings(true)}
-                aria-label="Settings"
-                title="Settings"
+                aria-label={t.app.settings}
+                title={t.app.settings}
               >
                 <Settings />
               </Button>
               <Button onClick={() => openStagesDialog(true)}>
                 <Columns3 />
-                Manage stages
+                {t.app.manageStages}
               </Button>
               <Button variant="primary" onClick={() => openEditor({ mode: 'new' })}>
                 <Plus />
-                New process
+                {t.app.newProcess}
               </Button>
             </div>
           </div>
@@ -104,6 +106,7 @@ export default function App() {
 function Toast() {
   const toast = useStore((s) => s.toast)
   const clear = useStore((s) => s.clearToast)
+  const t = useT()
   if (!toast) return null
   return (
     <div
@@ -112,7 +115,7 @@ function Toast() {
     >
       <AlertCircle className="mt-0.5 size-4 shrink-0 text-danger" />
       <p className="text-[13px] text-fg">{toast}</p>
-      <button onClick={clear} className="text-subtle hover:text-fg" aria-label="Dismiss">
+      <button onClick={clear} className="text-subtle hover:text-fg" aria-label={t.common.dismiss}>
         <X className="size-4" />
       </button>
     </div>

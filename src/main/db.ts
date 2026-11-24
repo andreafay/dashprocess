@@ -63,6 +63,32 @@ const MIGRATIONS: ((db: DatabaseSync) => void)[] = [
   },
   (db) => {
     db.exec("ALTER TABLE processes ADD COLUMN job_url TEXT NOT NULL DEFAULT ''")
+  },
+  (db) => {
+    // Stages can be built-in presets with translated names. Existing stages whose name matches a
+    // preset (in English or Italian, ignoring case) become that preset.
+    db.exec(`
+      ALTER TABLE stages ADD COLUMN preset TEXT CHECK (preset IN (
+        'applied', 'screening', 'hr_interview', 'technical_interview',
+        'home_assignment', 'final_interview', 'reference_check', 'offer'));
+      ALTER TABLE stages ADD COLUMN renamed INTEGER NOT NULL DEFAULT 0;
+    `)
+    const names: [string, string[]][] = [
+      ['applied', ['applied', 'candidatura inviata']],
+      ['screening', ['screening']],
+      ['hr_interview', ['hr interview', 'colloquio hr']],
+      ['technical_interview', ['technical interview', 'colloquio tecnico']],
+      ['home_assignment', ['home assignment', 'esercizio a casa']],
+      ['final_interview', ['final interview', 'colloquio finale']],
+      ['reference_check', ['reference check', 'verifica referenze']],
+      ['offer', ['offer', 'offerta']]
+    ]
+    const link = db.prepare(
+      `UPDATE stages SET preset = ? WHERE id = (
+         SELECT id FROM stages WHERE preset IS NULL AND lower(trim(name)) IN (?, ?)
+         ORDER BY position LIMIT 1)`
+    )
+    for (const [preset, [a, b = a]] of names) link.run(preset, a, b)
   }
 ]
 

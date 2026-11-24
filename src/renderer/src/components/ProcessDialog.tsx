@@ -7,7 +7,7 @@ import { Input, Label, Textarea } from './ui/input'
 import { Select } from './ui/select'
 import { Segmented } from './ui/segmented'
 import { Switch } from './ui/switch'
-import { PERIOD_LABEL } from '@/lib/format'
+import { useStageLabel, useT } from '@/lib/i18n'
 import { useStore } from '@/store'
 
 /** Form state: like ProcessInput, but pay amounts are kept as typed text. */
@@ -32,6 +32,8 @@ export function ProcessDialog() {
   const [error, setError] = useState<string | null>(null)
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [saving, setSaving] = useState(false)
+  const t = useT()
+  const label = useStageLabel()
 
   // Reset the form each time the dialog opens.
   useEffect(() => {
@@ -72,13 +74,13 @@ export function ProcessDialog() {
     e.preventDefault()
     if (!form) return
     if (!form.company.trim() || !form.role.trim()) {
-      setError('Company and role are required.')
+      setError(t.form.required)
       return
     }
     const min = form.payMin === '' ? null : Number(form.payMin)
     const max = form.payMax === '' ? null : Number(form.payMax)
     if (min != null && max != null && min > max) {
-      setError('Minimum pay can’t be higher than maximum pay.')
+      setError(t.form.payRange)
       return
     }
     const input: ProcessInput = { ...form, payMin: min, payMax: max, startDate: form.startDate || null }
@@ -94,8 +96,8 @@ export function ProcessDialog() {
     <Dialog
       open={open}
       onOpenChange={(o) => !o && close()}
-      title={existing ? 'Edit process' : 'New process'}
-      description={existing ? `${existing.company} · ${existing.role}` : 'Track a new hiring process.'}
+      title={existing ? t.form.editTitle : t.form.newTitle}
+      description={existing ? `${existing.company} · ${existing.role}` : t.form.newDescription}
       className="w-[620px]"
       footer={
         <>
@@ -109,95 +111,95 @@ export function ProcessDialog() {
                   close()
                 }}
               >
-                <Trash2 /> Confirm delete
+                <Trash2 /> {t.form.confirmDelete}
               </Button>
             ) : (
               <Button variant="danger-ghost" size="sm" onClick={() => setConfirmDelete(true)}>
-                <Trash2 /> Delete
+                <Trash2 /> {t.form.delete}
               </Button>
             ))}
           <div className="flex-1" />
           <Button size="sm" onClick={close}>
-            Cancel
+            {t.common.cancel}
           </Button>
           <Button variant="primary" size="sm" type="submit" form="process-form" disabled={saving}>
-            {existing ? 'Save changes' : 'Create process'}
+            {existing ? t.form.save : t.form.create}
           </Button>
         </>
       }
     >
       <form id="process-form" onSubmit={submit} className="flex flex-col gap-5">
         <div className="grid grid-cols-2 gap-3">
-          <Field label="Company" htmlFor="company">
+          <Field label={t.form.company} htmlFor="company">
             <Input
               id="company"
               autoFocus
               value={form.company}
               onChange={(e) => set({ company: e.target.value })}
-              placeholder="Acme Corp"
+              placeholder={t.form.companyPlaceholder}
             />
           </Field>
-          <Field label="Role" htmlFor="role">
+          <Field label={t.form.role} htmlFor="role">
             <Input
               id="role"
               value={form.role}
               onChange={(e) => set({ role: e.target.value })}
-              placeholder="Senior Backend Engineer"
+              placeholder={t.form.rolePlaceholder}
             />
           </Field>
-          <Field label="Stage" htmlFor="stage">
+          <Field label={t.form.stage} htmlFor="stage">
             <Select
               id="stage"
               value={String(form.stageId)}
               onChange={(v) => set({ stageId: Number(v) })}
-              options={stages.map((s) => ({ value: String(s.id), label: s.name }))}
+              options={stages.map((s) => ({ value: String(s.id), label: label(s) }))}
             />
           </Field>
-          <Field label="Status" htmlFor="status">
+          <Field label={t.form.status} htmlFor="status">
             <Segmented
               className="w-full"
               value={form.status}
               onChange={(status) => set({ status })}
               options={[
-                { value: 'active', label: 'Active' },
-                { value: 'rejected', label: 'Rejected' },
-                { value: 'withdrawn', label: 'Withdrawn' }
+                { value: 'active', label: t.status.active },
+                { value: 'rejected', label: t.status.rejected },
+                { value: 'withdrawn', label: t.status.withdrawn }
               ]}
             />
           </Field>
         </div>
 
-        <Section title="Details">
+        <Section title={t.form.details}>
           <div className="grid grid-cols-2 gap-3">
-            <ToggleCard id="remote" label="Remote" checked={form.remote} onChange={(remote) => set({ remote })} />
-            <ToggleCard id="b2b" label="B2B" checked={form.b2b} onChange={(b2b) => set({ b2b })} />
+            <ToggleCard id="remote" label={t.form.remote} checked={form.remote} onChange={(remote) => set({ remote })} />
+            <ToggleCard id="b2b" label={t.form.b2b} checked={form.b2b} onChange={(b2b) => set({ b2b })} />
           </div>
           <div className="grid grid-cols-2 gap-3">
-            <Field label="Company type">
+            <Field label={t.form.companyType}>
               <Segmented
                 className="w-full"
                 value={form.companyType}
                 onChange={(companyType) => set({ companyType })}
                 options={[
-                  { value: 'product', label: 'Product' },
-                  { value: 'consulting', label: 'Consulting' }
+                  { value: 'product', label: t.tags.product },
+                  { value: 'consulting', label: t.tags.consulting }
                 ]}
               />
             </Field>
-            <Field label="Region">
+            <Field label={t.form.region}>
               <Segmented
                 className="w-full"
                 value={form.region}
                 onChange={(region) => set({ region })}
                 options={[
-                  { value: 'italian', label: 'Italian' },
-                  { value: 'european', label: 'European' }
+                  { value: 'italian', label: t.tags.italian },
+                  { value: 'european', label: t.tags.european }
                 ]}
               />
             </Field>
           </div>
           <div className="grid grid-cols-2 gap-3">
-            <Field label="Start date" htmlFor="start">
+            <Field label={t.form.startDate} htmlFor="start">
               <Input
                 id="start"
                 type="date"
@@ -208,9 +210,9 @@ export function ProcessDialog() {
           </div>
         </Section>
 
-        <Section title="Pay">
+        <Section title={t.form.pay}>
           <div className="grid grid-cols-[1fr_1fr_96px_128px] gap-3">
-            <Field label="Min" htmlFor="pay-min">
+            <Field label={t.form.min} htmlFor="pay-min">
               <Input
                 id="pay-min"
                 type="number"
@@ -221,7 +223,7 @@ export function ProcessDialog() {
                 placeholder="50000"
               />
             </Field>
-            <Field label="Max" htmlFor="pay-max">
+            <Field label={t.form.max} htmlFor="pay-max">
               <Input
                 id="pay-max"
                 type="number"
@@ -232,7 +234,7 @@ export function ProcessDialog() {
                 placeholder="65000"
               />
             </Field>
-            <Field label="Currency" htmlFor="currency">
+            <Field label={t.form.currency} htmlFor="currency">
               <Select
                 id="currency"
                 value={form.payCurrency}
@@ -240,35 +242,35 @@ export function ProcessDialog() {
                 options={CURRENCIES.map((c) => ({ value: c, label: c }))}
               />
             </Field>
-            <Field label="Period" htmlFor="period">
+            <Field label={t.form.period} htmlFor="period">
               <Select
                 id="period"
                 value={form.payPeriod}
                 onChange={(v) => set({ payPeriod: v as FormState['payPeriod'] })}
-                options={PAY_PERIODS.map((p) => ({ value: p, label: PERIOD_LABEL[p] }))}
+                options={PAY_PERIODS.map((p) => ({ value: p, label: t.pay.periodLabel[p] }))}
               />
             </Field>
           </div>
         </Section>
 
-        <Field label="Notes" htmlFor="notes">
+        <Field label={t.form.notes} htmlFor="notes">
           <Textarea
             id="notes"
             value={form.notes}
             onChange={(e) => set({ notes: e.target.value })}
-            placeholder="Recruiter, tech stack, impressions…"
+            placeholder={t.form.notesPlaceholder}
             rows={3}
           />
         </Field>
 
-        <Field label="Job ad link" htmlFor="job-url">
+        <Field label={t.form.jobAdLink} htmlFor="job-url">
           <Input
             id="job-url"
             inputMode="url"
             spellCheck={false}
             value={form.jobUrl}
             onChange={(e) => set({ jobUrl: e.target.value })}
-            placeholder="https://company.com/careers/backend-engineer"
+            placeholder={t.form.jobAdPlaceholder}
           />
         </Field>
 

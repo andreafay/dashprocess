@@ -4,6 +4,7 @@ import { Button } from './ui/button'
 import { Label } from './ui/input'
 import { Select } from './ui/select'
 import { useStore } from '@/store'
+import { useStageLabel, useT } from '@/lib/i18n'
 
 export function DeleteStageDialog() {
   const stageId = useStore((s) => s.deletingStageId)
@@ -16,6 +17,8 @@ export function DeleteStageDialog() {
   const others = stages.filter((s) => s.id !== stageId)
   const count = processes.filter((p) => p.stageId === stageId).length
   const [moveTo, setMoveTo] = useState<number | null>(null)
+  const t = useT()
+  const label = useStageLabel()
 
   useEffect(() => {
     // Default to the stage just before the deleted one, or the first other stage.
@@ -32,13 +35,13 @@ export function DeleteStageDialog() {
     <Dialog
       open
       onOpenChange={(o) => !o && close()}
-      title={`Delete “${stage.name}”?`}
+      title={t.deleteStage.title(label(stage))}
       className="w-[440px]"
       footer={
         <>
           <div className="flex-1" />
           <Button size="sm" onClick={close}>
-            Cancel
+            {t.common.cancel}
           </Button>
           <Button
             variant="danger"
@@ -49,28 +52,27 @@ export function DeleteStageDialog() {
               await deleteStage(stage.id, count > 0 ? moveTo : null)
             }}
           >
-            Delete stage
+            {t.deleteStage.confirm}
           </Button>
         </>
       }
     >
       {isLast ? (
-        <p className="text-[13px] text-muted">The board needs at least one stage.</p>
+        <p className="text-[13px] text-muted">{t.deleteStage.lastStage}</p>
       ) : count === 0 ? (
-        <p className="text-[13px] text-muted">This stage is empty. Deleting it can’t be undone.</p>
+        <p className="text-[13px] text-muted">{t.deleteStage.empty}</p>
       ) : (
         <div className="flex flex-col gap-3">
           <p className="text-[13px] text-muted">
-            This stage has {count} {count === 1 ? 'process' : 'processes'}. Choose where to move{' '}
-            {count === 1 ? 'it' : 'them'}.
+            {t.deleteStage.hasProcesses(count)}
           </p>
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="move-to">Move processes to</Label>
+            <Label htmlFor="move-to">{t.deleteStage.moveTo}</Label>
             <Select
               id="move-to"
               value={String(moveTo ?? '')}
               onChange={(v) => setMoveTo(Number(v))}
-              options={others.map((s) => ({ value: String(s.id), label: s.name }))}
+              options={others.map((s) => ({ value: String(s.id), label: label(s) }))}
             />
           </div>
         </div>

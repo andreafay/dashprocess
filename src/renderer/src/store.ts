@@ -5,8 +5,10 @@ import {
   type Process,
   type ProcessInput,
   type Stage,
+  type StagePreset,
   type Theme
 } from '@shared/types'
+import { isLanguage, MESSAGES, type Language } from '@shared/i18n'
 import { applyTheme } from '@/lib/theme'
 import { processTags } from '@/lib/tags'
 import { errorMessage } from '@/lib/utils'
@@ -25,6 +27,7 @@ interface State {
   toast: string | null
   settingsOpen: boolean
   theme: Theme
+  language: Language
   filtersSidebar: boolean
   filters: Filters
 
@@ -32,6 +35,7 @@ interface State {
   setSearch(search: string): void
   openSettings(open: boolean): void
   setTheme(theme: Theme): void
+  setLanguage(language: Language): void
   setFiltersSidebar(on: boolean): void
   setFilter<K extends keyof Filters>(key: K, value: Filters[K]): void
   clearFilters(): void
@@ -47,8 +51,9 @@ interface State {
   /** `index` is the position among ALL processes of the target stage, not just the visible ones. */
   moveProcess(id: number, stageId: number, index: number): Promise<void>
 
-  createStage(name: string): Promise<void>
+  createStage(name: string, preset: StagePreset | null): Promise<void>
   renameStage(id: number, name: string): Promise<void>
+  resetStageName(id: number): Promise<void>
   reorderStages(ids: number[]): Promise<void>
   deleteStage(id: number, moveTo: number | null): Promise<void>
 }
@@ -97,6 +102,9 @@ export const useStore = create<State>((set, get) => {
     toast: null,
     settingsOpen: false,
     theme: window.api.settings.initialTheme,
+    language: isLanguage(window.api.settings.initialLanguage)
+      ? window.api.settings.initialLanguage
+      : 'en',
     filtersSidebar: window.api.settings.initialFiltersSidebar === true,
     // `??` guards against a preload from before filters were saved (a stale `npm run dev`).
     filters: window.api.settings.initialFilters ?? NO_FILTERS,
@@ -110,6 +118,11 @@ export const useStore = create<State>((set, get) => {
       set({ theme })
       applyTheme(theme)
       save(() => window.api.settings.setTheme(theme))
+    },
+    setLanguage: (language) => {
+      set({ language })
+      document.documentElement.lang = language
+      save(() => window.api.settings.setLanguage(language))
     },
     setFiltersSidebar: (on) => {
       set({ filtersSidebar: on })
@@ -160,16 +173,28 @@ export const useStore = create<State>((set, get) => {
       await run(() => window.api.processes.move(id, stageId, index))
     },
 
-    createStage: (name) =>
+    createStage: (name, preset) =>
       run(async () => {
-        await window.api.stages.create(name)
+        await window.api.stages.create(name, preset)
         await reload()
       }).then(() => {}),
 
     renameStage: async (id, name) => {
-      set((s) => ({ stages: s.stages.map((st) => (st.id === id ? { ...st, name } : st)) }))
-      await run(() => window.api.stages.rename(id, name))
+      // Show the new name right away; the reload then picks up whether a preset name was restored.
+      set((s) => ({
+        stages: s.stages.map((st) => (st.id === id ? { ...st, name, renamed: true } : st))
+      }))
+      await run(async () => {
+        await window.api.stages.rename(id, name)
+        await reload()
+      })
     },
+
+    resetStageName: (id) =>
+      run(async () => {
+        await window.api.stages.resetName(id)
+        await reload()
+      }).then(() => {}),
 
     reorderStages: async (ids) => {
       set((s) => ({
@@ -221,12 +246,16 @@ export function isEnded(p: Process): boolean {
 export function matchesSearch(p: Process, search: string): boolean {
   const words = search.toLowerCase().split(/\s+/).filter(Boolean)
   if (words.length === 0) return true
+  // Badge and status words match in every language, so "consulting" and "consulenza" both work.
   const text = [
     p.company,
     p.role,
     p.notes,
     p.status,
-    ...processTags(p).map((t) => t.label),
+    ...Object.values(MESSAGES).flatMap((m) => [
+      m.status[p.status],
+      ...processTags(p, m).map((t) => t.label)
+    ]),
     p.remote ? '' : 'onsite'
   ]
     .join(' ')

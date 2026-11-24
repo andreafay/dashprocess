@@ -7,6 +7,7 @@ import { ErrorBoundary } from './components/ErrorBoundary'
 import { applyTheme } from './lib/theme'
 
 applyTheme(window.api.settings.initialTheme)
+document.documentElement.lang = window.api.settings.initialLanguage ?? 'en'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

@@ -2,7 +2,7 @@ import { app, BrowserWindow, nativeTheme, shell } from 'electron'
 import { join } from 'node:path'
 import { registerIpc } from './ipc'
 import { closeDb, getDb } from './db'
-import { getTheme } from './repo'
+import { getLanguage, getTheme } from './repo'
 
 // Must match --bg in src/renderer/src/index.css.
 const BG = { light: '#f6f7f9', dark: '#1d2129' }
@@ -54,6 +54,10 @@ function createWindow(): void {
     win.loadFile(join(__dirname, '../renderer/index.html'))
   }
 }
+
+// Chromium's own UI (the date picker's calendar, for example) follows this switch. It must be set
+// before the app is ready, so a language change applies to those parts after a restart.
+app.commandLine.appendSwitch('lang', getLanguage() === 'it' ? 'it' : 'en-GB')
 
 app.whenReady().then(() => {
   getDb()

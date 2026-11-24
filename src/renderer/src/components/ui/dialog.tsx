@@ -2,6 +2,7 @@ import * as D from '@radix-ui/react-dialog'
 import { X } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { cn } from '@/lib/utils'
+import { useT } from '@/lib/i18n'
 
 interface DialogProps {
   open: boolean
@@ -22,6 +23,7 @@ export function Dialog({
   footer,
   className
 }: DialogProps) {
+  const t = useT()
   return (
     <D.Root open={open} onOpenChange={onOpenChange}>
       <D.Portal>
@@ -41,7 +43,7 @@ export function Dialog({
             </div>
             <D.Close className="-mr-2 rounded-md p-1.5 text-subtle hover:bg-surface-2 hover:text-fg">
               <X className="size-4" />
-              <span className="sr-only">Close</span>
+              <span className="sr-only">{t.common.close}</span>
             </D.Close>
           </div>
           <div className="min-h-0 flex-1 overflow-y-auto px-6 pb-5">{children}</div>

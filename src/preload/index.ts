@@ -4,8 +4,9 @@ import type { Api } from '@shared/types'
 const api: Api = {
   stages: {
     list: () => ipcRenderer.invoke('stages:list'),
-    create: (name) => ipcRenderer.invoke('stages:create', name),
+    create: (name, preset) => ipcRenderer.invoke('stages:create', name, preset),
     rename: (id, name) => ipcRenderer.invoke('stages:rename', id, name),
+    resetName: (id) => ipcRenderer.invoke('stages:resetName', id),
     reorder: (ids) => ipcRenderer.invoke('stages:reorder', ids),
     remove: (id, moveTo) => ipcRenderer.invoke('stages:remove', id, moveTo)
   },
@@ -23,6 +24,8 @@ const api: Api = {
     initialFiltersSidebar: ipcRenderer.sendSync('settings:getFiltersSidebarSync'),
     setFiltersSidebar: (on) => ipcRenderer.invoke('settings:setFiltersSidebar', on),
     initialFilters: ipcRenderer.sendSync('settings:getFiltersSync'),
+    initialLanguage: ipcRenderer.sendSync('settings:getLanguageSync'),
+    setLanguage: (language) => ipcRenderer.invoke('settings:setLanguage', language),
     setFilters: (filters) => ipcRenderer.invoke('settings:setFilters', filters)
   }
 }
