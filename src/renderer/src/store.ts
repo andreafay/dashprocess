@@ -1,28 +1,18 @@
 import { create } from 'zustand'
-import type { CompanyType, Process, ProcessInput, Region, Stage, Theme } from '@shared/types'
+import {
+  NO_FILTERS,
+  type Filters,
+  type Process,
+  type ProcessInput,
+  type Stage,
+  type Theme
+} from '@shared/types'
 import { applyTheme } from '@/lib/theme'
 import { processTags } from '@/lib/tags'
 import { errorMessage } from '@/lib/utils'
 
 /** What the process dialog is showing: nothing, a new process (optionally in a stage), or an existing one. */
 export type Editing = null | { mode: 'new'; stageId?: number } | { mode: 'edit'; id: number }
-
-/** Sidebar filters. 'any' means the filter is off. */
-export interface Filters {
-  status: 'any' | 'active' | 'ended'
-  workplace: 'any' | 'remote' | 'onsite'
-  contract: 'any' | 'b2b' | 'employee'
-  companyType: 'any' | CompanyType
-  region: 'any' | Region
-}
-
-export const NO_FILTERS: Filters = {
-  status: 'any',
-  workplace: 'any',
-  contract: 'any',
-  companyType: 'any',
-  region: 'any'
-}
 
 interface State {
   stages: Stage[]
@@ -108,7 +98,8 @@ export const useStore = create<State>((set, get) => {
     settingsOpen: false,
     theme: window.api.settings.initialTheme,
     filtersSidebar: window.api.settings.initialFiltersSidebar === true,
-    filters: NO_FILTERS,
+    // `??` guards against a preload from before filters were saved (a stale `npm run dev`).
+    filters: window.api.settings.initialFilters ?? NO_FILTERS,
 
     load: () => run(reload).then(() => {}),
     setSearch: (search) => set({ search }),
@@ -124,8 +115,15 @@ export const useStore = create<State>((set, get) => {
       set({ filtersSidebar: on })
       save(() => window.api.settings.setFiltersSidebar(on))
     },
-    setFilter: (key, value) => set((s) => ({ filters: { ...s.filters, [key]: value } })),
-    clearFilters: () => set({ filters: NO_FILTERS }),
+    setFilter: (key, value) => {
+      const filters = { ...get().filters, [key]: value }
+      set({ filters })
+      save(() => window.api.settings.setFilters(filters))
+    },
+    clearFilters: () => {
+      set({ filters: NO_FILTERS })
+      save(() => window.api.settings.setFilters(NO_FILTERS))
+    },
     openEditor: (editing) => set({ editing }),
     openStagesDialog: (open) => set({ stagesDialogOpen: open }),
     askDeleteStage: (id) => set({ deletingStageId: id }),
@@ -235,6 +233,8 @@ export function matchesSearch(p: Process, search: string): boolean {
     .toLowerCase()
   return words.every((w) => text.includes(w))
 }
+
+export type { Filters }
 
 export function matchesFilters(p: Process, f: Filters): boolean {
   if (f.status === 'active' && isEnded(p)) return false

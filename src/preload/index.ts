@@ -21,7 +21,9 @@ const api: Api = {
     getTheme: () => ipcRenderer.invoke('settings:getTheme'),
     setTheme: (theme) => ipcRenderer.invoke('settings:setTheme', theme),
     initialFiltersSidebar: ipcRenderer.sendSync('settings:getFiltersSidebarSync'),
-    setFiltersSidebar: (on) => ipcRenderer.invoke('settings:setFiltersSidebar', on)
+    setFiltersSidebar: (on) => ipcRenderer.invoke('settings:setFiltersSidebar', on),
+    initialFilters: ipcRenderer.sendSync('settings:getFiltersSync'),
+    setFilters: (filters) => ipcRenderer.invoke('settings:setFilters', filters)
   }
 }
 

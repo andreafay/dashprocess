@@ -7,6 +7,25 @@ export type Region = (typeof REGIONS)[number]
 export const COMPANY_TYPES = ['consulting', 'product'] as const
 export type CompanyType = (typeof COMPANY_TYPES)[number]
 
+/** Allowed values for each sidebar filter. 'any' means the filter is off. */
+export const FILTER_VALUES = {
+  status: ['any', 'active', 'ended'],
+  workplace: ['any', 'remote', 'onsite'],
+  contract: ['any', 'b2b', 'employee'],
+  companyType: ['any', ...COMPANY_TYPES],
+  region: ['any', ...REGIONS]
+} as const
+
+export type Filters = { [K in keyof typeof FILTER_VALUES]: (typeof FILTER_VALUES)[K][number] }
+
+export const NO_FILTERS: Filters = {
+  status: 'any',
+  workplace: 'any',
+  contract: 'any',
+  companyType: 'any',
+  region: 'any'
+}
+
 export const PAY_PERIODS = ['year', 'month', 'day', 'hour'] as const
 export type PayPeriod = (typeof PAY_PERIODS)[number]
 
@@ -73,5 +92,8 @@ export interface Api {
     /** Whether the filters sidebar is shown, read synchronously like the theme. Off by default. */
     initialFiltersSidebar: boolean
     setFiltersSidebar(on: boolean): Promise<void>
+    /** Saved sidebar filters, read synchronously so the board is filtered from the first paint. */
+    initialFilters: Filters
+    setFilters(filters: Filters): Promise<void>
   }
 }

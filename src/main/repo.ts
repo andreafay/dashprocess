@@ -2,10 +2,13 @@ import { getDb, transaction } from './db'
 import {
   COMPANY_TYPES,
   CURRENCIES,
+  FILTER_VALUES,
+  NO_FILTERS,
   PAY_PERIODS,
   REGIONS,
   STATUSES,
   THEMES,
+  type Filters,
   type Process,
   type ProcessInput,
   type Stage,
@@ -332,4 +335,32 @@ export function setFiltersSidebar(on: boolean): void {
   getDb()
     .prepare("INSERT INTO settings (key, value) VALUES ('filtersSidebar', ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value")
     .run(on === true ? '1' : '0')
+}
+
+/** Keeps only known filter keys with allowed values; anything else falls back to 'any'. */
+function cleanFilters(value: unknown): Filters {
+  const input = (value && typeof value === 'object' ? value : {}) as Record<string, unknown>
+  const result = { ...NO_FILTERS } as Record<keyof Filters, string>
+  for (const key of Object.keys(FILTER_VALUES) as (keyof Filters)[]) {
+    const allowed: readonly string[] = FILTER_VALUES[key]
+    if (typeof input[key] === 'string' && allowed.includes(input[key])) result[key] = input[key]
+  }
+  return result as Filters
+}
+
+export function getFilters(): Filters {
+  const row = getDb().prepare("SELECT value FROM settings WHERE key = 'filters'").get() as
+    | { value: string }
+    | undefined
+  try {
+    return cleanFilters(row ? JSON.parse(row.value) : null)
+  } catch {
+    return { ...NO_FILTERS }
+  }
+}
+
+export function setFilters(filters: Filters): void {
+  getDb()
+    .prepare("INSERT INTO settings (key, value) VALUES ('filters', ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value")
+    .run(JSON.stringify(cleanFilters(filters)))
 }

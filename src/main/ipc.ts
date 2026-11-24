@@ -1,5 +1,5 @@
 import { ipcMain, nativeTheme } from 'electron'
-import type { Theme } from '@shared/types'
+import type { Filters, Theme } from '@shared/types'
 import * as repo from './repo'
 
 export function registerIpc(): void {
@@ -31,4 +31,8 @@ export function registerIpc(): void {
     e.returnValue = repo.getFiltersSidebar()
   })
   ipcMain.handle('settings:setFiltersSidebar', (_e, on: boolean) => repo.setFiltersSidebar(on))
+  ipcMain.on('settings:getFiltersSync', (e) => {
+    e.returnValue = repo.getFilters()
+  })
+  ipcMain.handle('settings:setFilters', (_e, filters: unknown) => repo.setFilters(filters as Filters))
 }
