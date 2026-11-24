@@ -1,13 +1,15 @@
 import { useMemo } from 'react'
-import { Activity, CalendarPlus, CircleSlash, Trophy, type LucideIcon } from 'lucide-react'
+import { Activity, CalendarPlus, ChevronRight, CircleSlash, Trophy, type LucideIcon } from 'lucide-react'
 import { isEnded, useStore } from '@/store'
 import { useStageLabel, useT } from '@/lib/i18n'
+import { cn } from '@/lib/utils'
 
 export function StatsBar() {
   const processes = useStore((s) => s.processes)
   const stages = useStore((s) => s.stages)
   const t = useT()
   const label = useStageLabel()
+  const openEndedList = useStore((s) => s.openEndedList)
 
   const stats = useMemo(() => {
     const active = processes.filter((p) => !isEnded(p))
@@ -42,6 +44,8 @@ export function StatsBar() {
         label={t.stats.ended}
         value={stats.ended}
         tone="text-muted bg-surface-2"
+        onClick={() => openEndedList(true)}
+        title={t.stats.showEndedList}
       />
     </div>
   )
@@ -51,15 +55,30 @@ function Stat({
   icon: Icon,
   label,
   value,
-  tone
+  tone,
+  onClick,
+  title
 }: {
   icon: LucideIcon
   label: string
   value: number
   tone: string
+  /** Makes the tile a button. */
+  onClick?: () => void
+  title?: string
 }) {
+  const Tag = onClick ? 'button' : 'div'
   return (
-    <div className="flex items-center gap-3 rounded-xl border border-border bg-surface px-4 py-3 shadow-[var(--shadow-card)]">
+    <Tag
+      type={onClick ? 'button' : undefined}
+      onClick={onClick}
+      title={title}
+      className={cn(
+        'flex items-center gap-3 rounded-xl border border-border bg-surface px-4 py-3 text-left shadow-[var(--shadow-card)]',
+        onClick &&
+          'group cursor-pointer transition-colors hover:border-border-strong hover:bg-surface-2/50 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none'
+      )}
+    >
       <div className={`flex size-9 shrink-0 items-center justify-center rounded-lg ${tone}`}>
         <Icon className="size-[18px]" />
       </div>
@@ -67,6 +86,9 @@ function Stat({
         <div className="text-xl leading-6 font-semibold tabular-nums">{value}</div>
         <div className="truncate text-[12px] text-muted">{label}</div>
       </div>
-    </div>
+      {onClick && (
+        <ChevronRight className="ml-auto size-4 shrink-0 text-subtle transition-transform group-hover:translate-x-0.5" />
+      )}
+    </Tag>
   )
 }

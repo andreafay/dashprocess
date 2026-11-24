@@ -18,13 +18,13 @@ const AVATAR_COLORS = [
   'bg-orange-500'
 ]
 
-function avatarColor(name: string): string {
+export function avatarColor(name: string): string {
   let h = 0
   for (const ch of name.toLowerCase()) h = (h * 31 + ch.charCodeAt(0)) >>> 0
   return AVATAR_COLORS[h % AVATAR_COLORS.length]
 }
 
-function initials(name: string): string {
+export function initials(name: string): string {
   const words = name.trim().split(/\s+/)
   return (words.length > 1 ? words[0][0] + words[1][0] : name.slice(0, 2)).toUpperCase()
 }

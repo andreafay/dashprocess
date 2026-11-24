@@ -8,6 +8,7 @@ import { DeleteStageDialog } from './components/DeleteStageDialog'
 import { Button } from './components/ui/button'
 import { Input } from './components/ui/input'
 import { SettingsDialog } from './components/SettingsDialog'
+import { EndedListDialog } from './components/EndedListDialog'
 import { FiltersSidebar } from './components/FiltersSidebar'
 import { activeFilterCount, effectiveFilters, isVisible, onBoard, useStore } from './store'
 import { useT } from './lib/i18n'
@@ -102,6 +103,7 @@ export default function App() {
       <StagesDialog />
       <DeleteStageDialog />
       <SettingsDialog />
+      <EndedListDialog />
       <Toast />
     </div>
   )

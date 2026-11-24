@@ -25,7 +25,17 @@ export const it: Messages = {
     active: 'Processi attivi',
     atStage: (stage) => `In ${stage}`,
     startedRecently: 'Iniziati negli ultimi 30 giorni',
-    ended: 'Conclusi'
+    ended: 'Conclusi',
+    showEndedList: 'Mostra i processi conclusi'
+  },
+
+  endedList: {
+    title: 'Processi conclusi',
+    description: (n) =>
+      n === 1 ? '1 processo rifiutato o ritirato.' : `${n} processi rifiutati o ritirati.`,
+    empty: 'Ancora nessun processo concluso.',
+    lastStage: (stage) => `Ultima fase: ${stage}`,
+    updated: (date) => `Aggiornato il ${date}`
   },
 
   status: {

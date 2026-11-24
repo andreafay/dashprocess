@@ -26,7 +26,17 @@ export const en = {
     active: 'Active processes',
     atStage: (stage: string) => `At ${stage}`,
     startedRecently: 'Started in last 30 days',
-    ended: 'Ended'
+    ended: 'Ended',
+    showEndedList: 'Show ended processes'
+  },
+
+  endedList: {
+    title: 'Ended processes',
+    description: (n: number) =>
+      n === 1 ? '1 rejected or withdrawn process.' : `${n} rejected or withdrawn processes.`,
+    empty: 'No ended processes yet.',
+    lastStage: (stage: string) => `Last stage: ${stage}`,
+    updated: (date: string) => `Updated ${date}`
   },
 
   status: {

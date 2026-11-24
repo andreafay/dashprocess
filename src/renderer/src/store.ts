@@ -26,6 +26,7 @@ interface State {
   deletingStageId: number | null
   toast: string | null
   settingsOpen: boolean
+  endedListOpen: boolean
   theme: Theme
   language: Language
   filtersSidebar: boolean
@@ -35,6 +36,7 @@ interface State {
   load(): Promise<void>
   setSearch(search: string): void
   openSettings(open: boolean): void
+  openEndedList(open: boolean): void
   setTheme(theme: Theme): void
   setLanguage(language: Language): void
   setFiltersSidebar(on: boolean): void
@@ -103,6 +105,7 @@ export const useStore = create<State>((set, get) => {
     deletingStageId: null,
     toast: null,
     settingsOpen: false,
+    endedListOpen: false,
     theme: window.api.settings.initialTheme,
     language: isLanguage(window.api.settings.initialLanguage)
       ? window.api.settings.initialLanguage
@@ -115,6 +118,7 @@ export const useStore = create<State>((set, get) => {
     load: () => run(reload).then(() => {}),
     setSearch: (search) => set({ search }),
     openSettings: (open) => set({ settingsOpen: open }),
+    openEndedList: (open) => set({ endedListOpen: open }),
     // Applies the theme right away and saves it. The main process also sets
     // nativeTheme.themeSource so the title bar buttons match.
     setTheme: (theme) => {
