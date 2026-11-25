@@ -89,6 +89,10 @@ const MIGRATIONS: ((db: DatabaseSync) => void)[] = [
          ORDER BY position LIMIT 1)`
     )
     for (const [preset, [a, b = a]] of names) link.run(preset, a, b)
+  },
+  (db) => {
+    // Optional rejection feedback or reason for withdrawing, for ended processes.
+    db.exec("ALTER TABLE processes ADD COLUMN end_reason TEXT NOT NULL DEFAULT ''")
   }
 ]
 

@@ -76,6 +76,11 @@ export function EndedListDialog() {
                       {p.role}
                       {stage && ` · ${t.endedList.lastStage(stageLabel(stage))}`}
                     </div>
+                    {p.endReason && (
+                      <p className="mt-1 line-clamp-2 text-[12.5px] text-subtle italic">
+                        “{p.endReason}”
+                      </p>
+                    )}
                   </div>
                   <div className="flex shrink-0 flex-col items-end gap-0.5 text-[12px] text-muted">
                     {pay && (

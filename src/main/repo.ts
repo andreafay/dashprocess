@@ -145,6 +145,7 @@ interface ProcessRow {
   pay_period: Process['payPeriod']
   notes: string
   job_url: string
+  end_reason: string
   created_at: string
   updated_at: string
 }
@@ -168,6 +169,7 @@ function toProcess(r: ProcessRow): Process {
     payPeriod: r.pay_period,
     notes: r.notes,
     jobUrl: r.job_url,
+    endReason: r.end_reason,
     createdAt: r.created_at,
     updatedAt: r.updated_at
   }
@@ -197,12 +199,14 @@ export function createProcess(input: ProcessInput): Process {
   const { lastInsertRowid } = db
     .prepare(
       `INSERT INTO processes (company, role, stage_id, position, status, remote, b2b, company_type,
-         region, start_date, pay_min, pay_max, pay_currency, pay_period, notes, job_url)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+         region, start_date, pay_min, pay_max, pay_currency, pay_period, notes, job_url,
+         end_reason)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
     )
     .run(
       p.company, p.role, p.stageId, next, p.status, +p.remote, +p.b2b, p.companyType,
-      p.region, p.startDate, p.payMin, p.payMax, p.payCurrency, p.payPeriod, p.notes, p.jobUrl
+      p.region, p.startDate, p.payMin, p.payMax, p.payCurrency, p.payPeriod, p.notes, p.jobUrl,
+      p.endReason
     )
   return getProcess(Number(lastInsertRowid))
 }
@@ -215,11 +219,12 @@ export function updateProcess(id: number, input: ProcessInput): Process {
     db.prepare(
       `UPDATE processes SET company = ?, role = ?, status = ?, remote = ?, b2b = ?, company_type = ?,
          region = ?, start_date = ?, pay_min = ?, pay_max = ?, pay_currency = ?, pay_period = ?,
-         notes = ?, job_url = ?, updated_at = datetime('now')
+         notes = ?, job_url = ?, end_reason = ?, updated_at = datetime('now')
        WHERE id = ?`
     ).run(
       p.company, p.role, p.status, +p.remote, +p.b2b, p.companyType, p.region, p.startDate,
-      p.payMin, p.payMax, p.payCurrency, p.payPeriod, p.notes, p.jobUrl, id
+      p.payMin, p.payMax, p.payCurrency, p.payPeriod, p.notes, p.jobUrl,
+      p.endReason, id
     )
     // Changing the stage from the form puts the card at the end of the new column.
     if (current.stageId !== p.stageId) {
@@ -351,7 +356,8 @@ function validate(input: ProcessInput): ProcessInput {
     payCurrency: oneOf(input.payCurrency, CURRENCIES, t().errors.fields.currency),
     payPeriod: oneOf(input.payPeriod, PAY_PERIODS, t().errors.fields.payPeriod),
     notes: typeof input.notes === 'string' ? input.notes.trim() : '',
-    jobUrl: optionalUrl(input.jobUrl)
+    jobUrl: optionalUrl(input.jobUrl),
+    endReason: typeof input.endReason === 'string' ? input.endReason.trim() : ''
   }
 }
 

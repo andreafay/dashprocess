@@ -1,4 +1,4 @@
-import { Banknote, CalendarDays, ExternalLink, StickyNote } from 'lucide-react'
+import { Banknote, CalendarDays, ExternalLink, MessageSquareText, StickyNote } from 'lucide-react'
 import type { Process } from '@shared/types'
 import { Badge } from './ui/badge'
 import { formatDate, formatPay, sinceDate } from '@/lib/format'
@@ -79,7 +79,7 @@ export function ProcessCard({ process: p, overlay, placeholder }: Props) {
         ))}
       </div>
 
-      {(pay || p.startDate || p.notes || p.jobUrl) && (
+      {(pay || p.startDate || p.notes || p.jobUrl || (ended && p.endReason)) && (
         <div className="mt-3 flex items-center gap-3 border-t border-border pt-2.5 text-[12px] text-muted">
           {pay && (
             <span className="flex min-w-0 items-center gap-1 font-medium text-fg">
@@ -103,6 +103,11 @@ export function ProcessCard({ process: p, overlay, placeholder }: Props) {
             >
               <ExternalLink className="size-3.5" />
             </a>
+          )}
+          {ended && p.endReason && (
+            <span title={t.card.endReason(p.endReason)} className="flex shrink-0">
+              <MessageSquareText className="size-3.5 text-subtle" aria-label={t.card.endReason(p.endReason)} />
+            </span>
           )}
           {p.notes && <StickyNote className="size-3.5 shrink-0 text-subtle" aria-label={t.card.hasNotes} />}
           {p.startDate && (

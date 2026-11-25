@@ -78,6 +78,8 @@ export interface ProcessInput {
   notes: string
   /** Link to the job ad, or '' when there is none. */
   jobUrl: string
+  /** Rejection feedback or reason for withdrawing; '' when none. Kept if the status goes back to active. */
+  endReason: string
 }
 
 export interface Process extends ProcessInput {

@@ -57,6 +57,7 @@ export const it: Messages = {
 
   card: {
     hasNotes: 'Ha delle note',
+    endReason: (reason) => `Feedback: ${reason}`,
     openJobAd: 'Apri annuncio',
     openJobAdTitle: (url) => `Apri annuncio: ${url}`,
     started: (date) => `Iniziato il ${date}`
@@ -150,6 +151,10 @@ export const it: Messages = {
     notesPlaceholder: 'Recruiter, stack tecnologico, impressioni…',
     jobAdLink: 'Link all’annuncio',
     jobAdPlaceholder: 'https://azienda.it/lavora-con-noi/backend-engineer',
+    rejectionFeedback: 'Feedback negativo',
+    rejectionPlaceholder: 'Cosa ti hanno detto? Cosa migliorare la prossima volta…',
+    withdrawReason: 'Motivo del ritiro',
+    withdrawPlaceholder: 'Perché ti sei ritirato? Retribuzione, ruolo, azienda…',
     delete: 'Elimina',
     confirmDelete: 'Conferma eliminazione',
     save: 'Salva modifiche',

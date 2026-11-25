@@ -262,6 +262,7 @@ export function matchesSearch(p: Process, search: string): boolean {
     p.company,
     p.role,
     p.notes,
+    p.endReason,
     p.status,
     ...Object.values(MESSAGES).flatMap((m) => [
       m.status[p.status],

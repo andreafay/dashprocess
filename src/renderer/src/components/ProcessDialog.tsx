@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react'
 import { Trash2 } from 'lucide-react'
 import { CURRENCIES, PAY_PERIODS, type ProcessInput } from '@shared/types'
 import { Dialog } from './ui/dialog'
@@ -33,6 +33,14 @@ export function ProcessDialog() {
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [saving, setSaving] = useState(false)
   const t = useT()
+  // Focus the feedback field when the user marks the process as rejected or withdrawn.
+  const reasonRef = useRef<HTMLTextAreaElement>(null)
+  const [focusReason, setFocusReason] = useState(false)
+  useEffect(() => {
+    if (!focusReason) return
+    reasonRef.current?.focus()
+    setFocusReason(false)
+  }, [focusReason])
   const label = useStageLabel()
 
   // Reset the form each time the dialog opens.
@@ -59,7 +67,8 @@ export function ProcessDialog() {
         payCurrency: 'EUR',
         payPeriod: 'year',
         notes: '',
-        jobUrl: ''
+        jobUrl: '',
+        endReason: ''
       })
     }
     // Only when the dialog target changes, not on every store update.
@@ -159,7 +168,10 @@ export function ProcessDialog() {
             <Segmented
               className="w-full"
               value={form.status}
-              onChange={(status) => set({ status })}
+              onChange={(status) => {
+                set({ status })
+                if (status !== 'active') setFocusReason(true)
+              }}
               options={[
                 { value: 'active', label: t.status.active },
                 { value: 'rejected', label: t.status.rejected },
@@ -168,6 +180,24 @@ export function ProcessDialog() {
             />
           </Field>
         </div>
+
+        {form.status !== 'active' && (
+          <Field
+            label={form.status === 'rejected' ? t.form.rejectionFeedback : t.form.withdrawReason}
+            htmlFor="end-reason"
+          >
+            <Textarea
+              id="end-reason"
+              ref={reasonRef}
+              value={form.endReason}
+              onChange={(e) => set({ endReason: e.target.value })}
+              placeholder={
+                form.status === 'rejected' ? t.form.rejectionPlaceholder : t.form.withdrawPlaceholder
+              }
+              rows={3}
+            />
+          </Field>
+        )}
 
         <Section title={t.form.details}>
           <div className="grid grid-cols-2 gap-3">

@@ -58,6 +58,7 @@ export const en = {
 
   card: {
     hasNotes: 'Has notes',
+    endReason: (reason: string) => `Feedback: ${reason}`,
     openJobAd: 'Open job ad',
     openJobAdTitle: (url: string) => `Open job ad: ${url}`,
     started: (date: string) => `Started ${date}`
@@ -151,6 +152,10 @@ export const en = {
     notesPlaceholder: 'Recruiter, tech stack, impressions…',
     jobAdLink: 'Job ad link',
     jobAdPlaceholder: 'https://company.com/careers/backend-engineer',
+    rejectionFeedback: 'Rejection feedback',
+    rejectionPlaceholder: 'What did they say? Anything to improve next time…',
+    withdrawReason: 'Reason for withdrawing',
+    withdrawPlaceholder: 'Why did you step out? Pay, role, company…',
     delete: 'Delete',
     confirmDelete: 'Confirm delete',
     save: 'Save changes',
