@@ -17,6 +17,12 @@ const api: Api = {
     remove: (id) => ipcRenderer.invoke('processes:remove', id),
     move: (id, stageId, index) => ipcRenderer.invoke('processes:move', id, stageId, index)
   },
+  auth: {
+    initialAccount: ipcRenderer.sendSync('auth:getAccountSync'),
+    signIn: () => ipcRenderer.invoke('auth:signIn'),
+    cancelSignIn: () => ipcRenderer.invoke('auth:cancelSignIn'),
+    signOut: () => ipcRenderer.invoke('auth:signOut')
+  },
   settings: {
     initialTheme: ipcRenderer.sendSync('settings:getThemeSync'),
     getTheme: () => ipcRenderer.invoke('settings:getTheme'),

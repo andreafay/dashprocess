@@ -89,6 +89,16 @@ export interface Process extends ProcessInput {
   updatedAt: string
 }
 
+/** The signed-in Google account. Only the profile is stored, locally. */
+export interface Account {
+  name: string
+  /** First name, used for the greeting; '' if Google didn't provide one. */
+  givenName: string
+  email: string
+  /** Profile photo URL, or ''. */
+  picture: string
+}
+
 export interface Api {
   stages: {
     list(): Promise<Stage[]>
@@ -108,6 +118,14 @@ export interface Api {
     remove(id: number): Promise<void>
     /** Moves a process to `stageId` at `index` within that stage. */
     move(id: number, stageId: number, index: number): Promise<void>
+  }
+  auth: {
+    /** The account signed in at startup, read synchronously so the greeting shows on first paint. */
+    initialAccount: Account | null
+    /** Opens Google sign-in in the browser; resolves once the user is back with their profile. */
+    signIn(): Promise<Account>
+    cancelSignIn(): Promise<void>
+    signOut(): Promise<void>
   }
   settings: {
     /** Saved theme, read synchronously when the window loads so the first paint is right. */

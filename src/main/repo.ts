@@ -9,6 +9,7 @@ import {
   STAGE_PRESETS,
   STATUSES,
   THEMES,
+  type Account,
   type Filters,
   type Process,
   type ProcessInput,
@@ -457,4 +458,31 @@ export function setShowStats(on: boolean): void {
   getDb()
     .prepare("INSERT INTO settings (key, value) VALUES ('showStats', ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value")
     .run(on === false ? '0' : '1')
+}
+
+/** The signed-in Google profile, or null when signed out. */
+export function getAccount(): Account | null {
+  const row = getDb().prepare("SELECT value FROM settings WHERE key = 'account'").get() as
+    | { value: string }
+    | undefined
+  if (!row) return null
+  try {
+    const a = JSON.parse(row.value) as Partial<Account>
+    if (typeof a.name !== 'string' || !a.name) return null
+    const text = (v: unknown): string => (typeof v === 'string' ? v : '')
+    return { name: a.name, givenName: text(a.givenName), email: text(a.email), picture: text(a.picture) }
+  } catch {
+    return null
+  }
+}
+
+export function setAccount(account: Account | null): void {
+  const db = getDb()
+  if (!account) {
+    db.prepare("DELETE FROM settings WHERE key = 'account'").run()
+    return
+  }
+  db.prepare(
+    "INSERT INTO settings (key, value) VALUES ('account', ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value"
+  ).run(JSON.stringify(account))
 }

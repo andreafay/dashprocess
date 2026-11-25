@@ -18,7 +18,13 @@ export const it: Messages = {
     search: 'Cerca',
     settings: 'Impostazioni',
     manageStages: 'Gestisci fasi',
-    newProcess: 'Nuovo processo'
+    newProcess: 'Nuovo processo',
+    greeting: {
+      morning: (name) => `Buongiorno, ${name} 👋`,
+      afternoon: (name) => `Buon pomeriggio, ${name} 👋`,
+      evening: (name) => `Buonasera, ${name} 👋`,
+      night: (name) => `Buonanotte, ${name} 👋`
+    }
   },
 
   stats: {
@@ -189,7 +195,23 @@ export const it: Messages = {
     filtersSidebar: 'Barra dei filtri',
     showEnded: 'Mostra processi conclusi',
     showStats: 'Mostra contatori di riepilogo',
-    language: 'Lingua'
+    language: 'Lingua',
+    account: 'Account',
+    signIn: 'Accedi con Google',
+    signingIn: 'Continua nel browser…',
+    signOut: 'Esci'
+  },
+
+  auth: {
+    notConfigured: 'L’accesso con Google non è ancora configurato. Vedi “Google sign-in” nel README.',
+    inProgress: 'Un accesso è già in corso.',
+    cancelled: 'Accesso annullato.',
+    timeout: 'Tempo scaduto per l’accesso. Riprova.',
+    denied: 'Accesso annullato nel browser.',
+    failed: 'Accesso con Google non riuscito. Riprova.',
+    doneTitle: 'Hai effettuato l’accesso a Dashprocess',
+    doneBody: 'Puoi chiudere questa scheda e tornare all’app.',
+    failedTitle: 'Accesso non riuscito'
   },
 
   crash: {

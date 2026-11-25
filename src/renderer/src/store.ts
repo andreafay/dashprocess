@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import {
   NO_FILTERS,
+  type Account,
   type Filters,
   type Process,
   type ProcessInput,
@@ -34,6 +35,8 @@ interface State {
   filtersSidebar: boolean
   showEnded: boolean
   showStats: boolean
+  account: Account | null
+  signingIn: boolean
   filters: Filters
 
   load(): Promise<void>
@@ -45,6 +48,9 @@ interface State {
   setFiltersSidebar(on: boolean): void
   setShowEnded(on: boolean): void
   setShowStats(on: boolean): void
+  signIn(): Promise<void>
+  cancelSignIn(): void
+  signOut(): void
   setFilter<K extends keyof Filters>(key: K, value: Filters[K]): void
   clearFilters(): void
   openEditor(editing: Editing): void
@@ -67,6 +73,8 @@ interface State {
 }
 
 let toastTimer: ReturnType<typeof setTimeout> | undefined
+/** Set when the user cancels sign-in, so the resulting rejection shows no error. */
+let cancelled = false
 
 export const useStore = create<State>((set, get) => {
   async function reload(): Promise<void> {
@@ -117,6 +125,9 @@ export const useStore = create<State>((set, get) => {
     filtersSidebar: window.api.settings.initialFiltersSidebar === true,
     showEnded: window.api.settings.initialShowEnded === true,
     showStats: window.api.settings.initialShowStats !== false,
+    // `?.` guards against a preload from before sign-in existed (a stale `npm run dev`).
+    account: window.api.auth?.initialAccount ?? null,
+    signingIn: false,
     // `??` guards against a preload from before filters were saved (a stale `npm run dev`).
     filters: window.api.settings.initialFilters ?? NO_FILTERS,
 
@@ -135,6 +146,28 @@ export const useStore = create<State>((set, get) => {
       set({ language })
       document.documentElement.lang = language
       save(() => window.api.settings.setLanguage(language))
+    },
+    signIn: async () => {
+      if (get().signingIn) return
+      cancelled = false
+      set({ signingIn: true })
+      try {
+        const account = await window.api.auth.signIn()
+        set({ account })
+      } catch (err) {
+        // Cancelling from the app isn't an error worth a toast.
+        if (!cancelled) get().showError(err)
+      } finally {
+        set({ signingIn: false })
+      }
+    },
+    cancelSignIn: () => {
+      cancelled = true
+      window.api.auth.cancelSignIn().catch(() => {})
+    },
+    signOut: () => {
+      set({ account: null })
+      save(() => window.api.auth.signOut())
     },
     setShowStats: (on) => {
       set({ showStats: on })

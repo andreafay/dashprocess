@@ -29,6 +29,10 @@ export function Dialog({
       <D.Portal>
         <D.Overlay className="animate-fade-in fixed inset-0 z-40 bg-slate-950/40 backdrop-blur-[2px]" />
         <D.Content
+          // Clicking the error toast (e.g. to dismiss it) shouldn't close the dialog behind it.
+          onInteractOutside={(e) => {
+            if ((e.target as HTMLElement | null)?.closest?.('[role="alert"]')) e.preventDefault()
+          }}
           className={cn(
             'animate-pop-in fixed top-1/2 left-1/2 z-50 flex max-h-[88vh] w-[560px] max-w-[calc(100vw-32px)] -translate-x-1/2 -translate-y-1/2 flex-col rounded-2xl border border-border bg-surface shadow-[var(--shadow-lift)] focus:outline-none',
             className

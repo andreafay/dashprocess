@@ -3,3 +3,7 @@ out
 dist
 *.log
 .DS_Store
+# Local secrets (Google sign-in keys)
+.env
+.env.local
+.env.*.local

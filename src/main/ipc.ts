@@ -2,6 +2,7 @@ import { ipcMain, nativeTheme } from 'electron'
 import type { Filters, StagePreset, Theme } from '@shared/types'
 import type { Language } from '@shared/i18n'
 import * as repo from './repo'
+import { cancelSignIn, signIn } from './auth'
 
 export function registerIpc(): void {
   ipcMain.handle('stages:list', () => repo.listStages())
@@ -22,6 +23,13 @@ export function registerIpc(): void {
   ipcMain.handle('processes:move', (_e, id: number, stageId: number, index: number) =>
     repo.moveProcess(id, stageId, index)
   )
+
+  ipcMain.on('auth:getAccountSync', (e) => {
+    e.returnValue = repo.getAccount()
+  })
+  ipcMain.handle('auth:signIn', () => signIn())
+  ipcMain.handle('auth:cancelSignIn', () => cancelSignIn())
+  ipcMain.handle('auth:signOut', () => repo.setAccount(null))
 
   ipcMain.handle('settings:getTheme', () => repo.getTheme())
   ipcMain.on('settings:getThemeSync', (e) => {

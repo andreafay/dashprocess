@@ -19,7 +19,14 @@ export const en = {
     search: 'Search',
     settings: 'Settings',
     manageStages: 'Manage stages',
-    newProcess: 'New process'
+    newProcess: 'New process',
+    /** Greeting for the signed-in user, by time of day. */
+    greeting: {
+      morning: (name: string) => `Good morning, ${name} 👋`,
+      afternoon: (name: string) => `Good afternoon, ${name} 👋`,
+      evening: (name: string) => `Good evening, ${name} 👋`,
+      night: (name: string) => `Good night, ${name} 👋`
+    }
   },
 
   stats: {
@@ -190,7 +197,23 @@ export const en = {
     filtersSidebar: 'Filters sidebar',
     showEnded: 'Show ended processes',
     showStats: 'Show summary counters',
-    language: 'Language'
+    language: 'Language',
+    account: 'Account',
+    signIn: 'Sign in with Google',
+    signingIn: 'Continue in your browser…',
+    signOut: 'Sign out'
+  },
+
+  auth: {
+    notConfigured: 'Google sign-in isn’t set up yet. See “Google sign-in” in the README.',
+    inProgress: 'A sign-in is already in progress.',
+    cancelled: 'Sign-in cancelled.',
+    timeout: 'Sign-in timed out. Please try again.',
+    denied: 'Sign-in was cancelled in the browser.',
+    failed: 'Google sign-in failed. Please try again.',
+    doneTitle: 'You’re signed in to Dashprocess',
+    doneBody: 'You can close this tab and go back to the app.',
+    failedTitle: 'Sign-in failed'
   },
 
   crash: {

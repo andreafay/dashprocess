@@ -12,6 +12,7 @@ import { ProcessListDialog } from './components/ProcessListDialog'
 import { FiltersSidebar } from './components/FiltersSidebar'
 import { activeFilterCount, effectiveFilters, isVisible, onBoard, useStore } from './store'
 import { useT } from './lib/i18n'
+import { usePartOfDay } from './lib/greeting'
 import logo from '../../../resources/icon.svg'
 
 export default function App() {
@@ -28,6 +29,8 @@ export default function App() {
   const filtersSidebar = useStore((s) => s.filtersSidebar)
   const showEnded = useStore((s) => s.showEnded)
   const showStats = useStore((s) => s.showStats)
+  const account = useStore((s) => s.account)
+  const partOfDay = usePartOfDay()
 
   useEffect(() => {
     load()
@@ -56,7 +59,11 @@ export default function App() {
         <main className="flex min-w-0 flex-1 flex-col">
           <div className="flex items-end justify-between gap-4 px-7 pt-3 pb-5">
             <div>
-              <h1 className="text-xl font-semibold tracking-tight text-fg">{t.app.pipeline}</h1>
+              <h1 className="text-xl font-semibold tracking-tight text-fg">
+                {account
+                  ? t.app.greeting[partOfDay](account.givenName || account.name)
+                  : t.app.pipeline}
+              </h1>
               <p className="mt-0.5 text-[13px] text-muted">
                 {loaded
                   ? narrowed
@@ -118,7 +125,8 @@ function Toast() {
   return (
     <div
       role="alert"
-      className="animate-menu-in fixed right-5 bottom-5 z-[60] flex max-w-sm items-start gap-3 rounded-xl border border-border bg-surface px-4 py-3 shadow-[var(--shadow-lift)]"
+      // pointer-events-auto: an open dialog disables clicks outside it, which would block Dismiss.
+      className="animate-menu-in pointer-events-auto fixed right-5 bottom-5 z-[60] flex max-w-sm items-start gap-3 rounded-xl border border-border bg-surface px-4 py-3 shadow-[var(--shadow-lift)]"
     >
       <AlertCircle className="mt-0.5 size-4 shrink-0 text-danger" />
       <p className="text-[13px] text-fg">{toast}</p>
