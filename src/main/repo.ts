@@ -444,3 +444,17 @@ export function setShowEnded(on: boolean): void {
     .prepare("INSERT INTO settings (key, value) VALUES ('showEnded', ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value")
     .run(on === true ? '1' : '0')
 }
+
+/** Whether the summary counters above the board are shown. On by default. */
+export function getShowStats(): boolean {
+  const row = getDb().prepare("SELECT value FROM settings WHERE key = 'showStats'").get() as
+    | { value: string }
+    | undefined
+  return row?.value !== '0'
+}
+
+export function setShowStats(on: boolean): void {
+  getDb()
+    .prepare("INSERT INTO settings (key, value) VALUES ('showStats', ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value")
+    .run(on === false ? '0' : '1')
+}

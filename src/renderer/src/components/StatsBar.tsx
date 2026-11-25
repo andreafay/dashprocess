@@ -1,51 +1,51 @@
 import { useMemo } from 'react'
 import { Activity, CalendarPlus, ChevronRight, CircleSlash, Trophy, type LucideIcon } from 'lucide-react'
-import { isEnded, useStore } from '@/store'
+import { useStore } from '@/store'
+import { statLists } from '@/lib/stats'
 import { useStageLabel, useT } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
 
 export function StatsBar() {
   const processes = useStore((s) => s.processes)
   const stages = useStore((s) => s.stages)
+  const openProcessList = useStore((s) => s.openProcessList)
   const t = useT()
   const label = useStageLabel()
-  const openEndedList = useStore((s) => s.openEndedList)
-
-  const stats = useMemo(() => {
-    const active = processes.filter((p) => !isEnded(p))
-    const lastStage = stages[stages.length - 1]
-    const monthAgo = new Date(Date.now() - 30 * 86_400_000).toISOString().slice(0, 10)
-    return {
-      active: active.length,
-      offers: lastStage ? active.filter((p) => p.stageId === lastStage.id).length : 0,
-      lastStage,
-      recent: processes.filter((p) => p.startDate && p.startDate >= monthAgo).length,
-      ended: processes.length - active.length
-    }
-  }, [processes, stages])
+  const { lists, lastStage } = useMemo(() => statLists(processes, stages), [processes, stages])
 
   return (
     <div className="grid grid-cols-4 gap-3 px-7 pb-5">
-      <Stat icon={Activity} label={t.stats.active} value={stats.active} tone="text-accent-text bg-accent-soft" />
+      <Stat
+        icon={Activity}
+        label={t.stats.active}
+        value={lists.active.length}
+        tone="text-accent-text bg-accent-soft"
+        onClick={() => openProcessList('active')}
+        title={t.stats.showList}
+      />
       <Stat
         icon={Trophy}
-        label={t.stats.atStage(stats.lastStage ? label(stats.lastStage) : '')}
-        value={stats.offers}
+        label={t.stats.atStage(lastStage ? label(lastStage) : '')}
+        value={lists.offer.length}
         tone="text-emerald-600 dark:text-emerald-400 bg-emerald-500/10"
+        onClick={() => openProcessList('offer')}
+        title={t.stats.showList}
       />
       <Stat
         icon={CalendarPlus}
         label={t.stats.startedRecently}
-        value={stats.recent}
+        value={lists.recent.length}
         tone="text-sky-600 dark:text-sky-400 bg-sky-500/10"
+        onClick={() => openProcessList('recent')}
+        title={t.stats.showList}
       />
       <Stat
         icon={CircleSlash}
         label={t.stats.ended}
-        value={stats.ended}
+        value={lists.ended.length}
         tone="text-muted bg-surface-2"
-        onClick={() => openEndedList(true)}
-        title={t.stats.showEndedList}
+        onClick={() => openProcessList('ended')}
+        title={t.stats.showList}
       />
     </div>
   )

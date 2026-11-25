@@ -39,6 +39,10 @@ export function registerIpc(): void {
     e.returnValue = repo.getShowEnded()
   })
   ipcMain.handle('settings:setShowEnded', (_e, on: boolean) => repo.setShowEnded(on))
+  ipcMain.on('settings:getShowStatsSync', (e) => {
+    e.returnValue = repo.getShowStats()
+  })
+  ipcMain.handle('settings:setShowStats', (_e, on: boolean) => repo.setShowStats(on))
   ipcMain.on('settings:getLanguageSync', (e) => {
     e.returnValue = repo.getLanguage()
   })

@@ -14,6 +14,8 @@ export function SettingsDialog() {
   const setFiltersSidebar = useStore((s) => s.setFiltersSidebar)
   const showEnded = useStore((s) => s.showEnded)
   const setShowEnded = useStore((s) => s.setShowEnded)
+  const showStats = useStore((s) => s.showStats)
+  const setShowStats = useStore((s) => s.setShowStats)
   const language = useStore((s) => s.language)
   const setLanguage = useStore((s) => s.setLanguage)
   const t = useT()
@@ -31,6 +33,9 @@ export function SettingsDialog() {
         </Row>
         <Row title={t.settings.theme}>
           <ThemeToggle />
+        </Row>
+        <Row title={t.settings.showStats} htmlFor="show-stats">
+          <Switch id="show-stats" checked={showStats} onChange={setShowStats} />
         </Row>
         <Row title={t.settings.filtersSidebar} htmlFor="filters-sidebar">
           <Switch id="filters-sidebar" checked={filtersSidebar} onChange={setFiltersSidebar} />

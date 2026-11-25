@@ -25,6 +25,8 @@ const api: Api = {
     setFiltersSidebar: (on) => ipcRenderer.invoke('settings:setFiltersSidebar', on),
     initialShowEnded: ipcRenderer.sendSync('settings:getShowEndedSync'),
     setShowEnded: (on) => ipcRenderer.invoke('settings:setShowEnded', on),
+    initialShowStats: ipcRenderer.sendSync('settings:getShowStatsSync'),
+    setShowStats: (on) => ipcRenderer.invoke('settings:setShowStats', on),
     initialFilters: ipcRenderer.sendSync('settings:getFiltersSync'),
     initialLanguage: ipcRenderer.sendSync('settings:getLanguageSync'),
     setLanguage: (language) => ipcRenderer.invoke('settings:setLanguage', language),

@@ -120,6 +120,9 @@ export interface Api {
     /** Whether rejected and withdrawn processes are shown on the board. Off by default. */
     initialShowEnded: boolean
     setShowEnded(on: boolean): Promise<void>
+    /** Whether the summary counters above the board are shown. On by default. */
+    initialShowStats: boolean
+    setShowStats(on: boolean): Promise<void>
     /** Saved sidebar filters, read synchronously so the board is filtered from the first paint. */
     initialFilters: Filters
     setFilters(filters: Filters): Promise<void>

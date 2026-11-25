@@ -27,14 +27,18 @@ export const en = {
     atStage: (stage: string) => `At ${stage}`,
     startedRecently: 'Started in last 30 days',
     ended: 'Ended',
-    showEndedList: 'Show ended processes'
+    showList: 'Show the list'
   },
 
-  endedList: {
-    title: 'Ended processes',
-    description: (n: number) =>
-      n === 1 ? '1 rejected or withdrawn process.' : `${n} rejected or withdrawn processes.`,
-    empty: 'No ended processes yet.',
+  processList: {
+    titles: {
+      active: 'Active processes',
+      offer: (stage: string) => `At ${stage}`,
+      recent: 'Started in the last 30 days',
+      ended: 'Ended processes'
+    },
+    count: (n: number) => (n === 1 ? '1 process' : `${n} processes`),
+    empty: 'No processes here yet.',
     lastStage: (stage: string) => `Last stage: ${stage}`,
     updated: (date: string) => `Updated ${date}`
   },
@@ -185,6 +189,7 @@ export const en = {
     system: 'Match system theme',
     filtersSidebar: 'Filters sidebar',
     showEnded: 'Show ended processes',
+    showStats: 'Show summary counters',
     language: 'Language'
   },
 

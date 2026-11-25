@@ -8,7 +8,7 @@ import { DeleteStageDialog } from './components/DeleteStageDialog'
 import { Button } from './components/ui/button'
 import { Input } from './components/ui/input'
 import { SettingsDialog } from './components/SettingsDialog'
-import { EndedListDialog } from './components/EndedListDialog'
+import { ProcessListDialog } from './components/ProcessListDialog'
 import { FiltersSidebar } from './components/FiltersSidebar'
 import { activeFilterCount, effectiveFilters, isVisible, onBoard, useStore } from './store'
 import { useT } from './lib/i18n'
@@ -27,6 +27,7 @@ export default function App() {
   const filters = useStore((s) => s.filters)
   const filtersSidebar = useStore((s) => s.filtersSidebar)
   const showEnded = useStore((s) => s.showEnded)
+  const showStats = useStore((s) => s.showStats)
 
   useEffect(() => {
     load()
@@ -94,7 +95,7 @@ export default function App() {
               </Button>
             </div>
           </div>
-          <StatsBar />
+          {showStats && <StatsBar />}
           {loaded && <Board />}
         </main>
       </div>
@@ -103,7 +104,7 @@ export default function App() {
       <StagesDialog />
       <DeleteStageDialog />
       <SettingsDialog />
-      <EndedListDialog />
+      <ProcessListDialog />
       <Toast />
     </div>
   )

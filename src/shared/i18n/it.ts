@@ -26,14 +26,18 @@ export const it: Messages = {
     atStage: (stage) => `In ${stage}`,
     startedRecently: 'Iniziati negli ultimi 30 giorni',
     ended: 'Conclusi',
-    showEndedList: 'Mostra i processi conclusi'
+    showList: 'Mostra l’elenco'
   },
 
-  endedList: {
-    title: 'Processi conclusi',
-    description: (n) =>
-      n === 1 ? '1 processo rifiutato o ritirato.' : `${n} processi rifiutati o ritirati.`,
-    empty: 'Ancora nessun processo concluso.',
+  processList: {
+    titles: {
+      active: 'Processi attivi',
+      offer: (stage) => `In ${stage}`,
+      recent: 'Iniziati negli ultimi 30 giorni',
+      ended: 'Processi conclusi'
+    },
+    count: (n) => (n === 1 ? '1 processo' : `${n} processi`),
+    empty: 'Ancora nessun processo qui.',
     lastStage: (stage) => `Ultima fase: ${stage}`,
     updated: (date) => `Aggiornato il ${date}`
   },
@@ -184,6 +188,7 @@ export const it: Messages = {
     system: 'Usa il tema di sistema',
     filtersSidebar: 'Barra dei filtri',
     showEnded: 'Mostra processi conclusi',
+    showStats: 'Mostra contatori di riepilogo',
     language: 'Lingua'
   },
 

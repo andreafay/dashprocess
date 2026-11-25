@@ -1,17 +1,21 @@
 import { useMemo } from 'react'
-import { Banknote, CircleSlash } from 'lucide-react'
+import { Banknote, Inbox } from 'lucide-react'
 import { Dialog } from './ui/dialog'
 import { Badge } from './ui/badge'
 import { avatarColor, initials } from './ProcessCard'
 import { formatDate, formatPay } from '@/lib/format'
 import { useStageLabel, useT } from '@/lib/i18n'
+import { statLists } from '@/lib/stats'
 import { cn } from '@/lib/utils'
 import { isEnded, useStore } from '@/store'
 
-/** Lists every rejected or withdrawn process, most recently updated first. Click one to edit it. */
-export function EndedListDialog() {
-  const open = useStore((s) => s.endedListOpen)
-  const openEndedList = useStore((s) => s.openEndedList)
+/**
+ * The processes behind one of the tiles above the board, as a compact list (one row per process).
+ * Clicking a row opens it for editing.
+ */
+export function ProcessListDialog() {
+  const kind = useStore((s) => s.processList)
+  const openProcessList = useStore((s) => s.openProcessList)
   const openEditor = useStore((s) => s.openEditor)
   const processes = useStore((s) => s.processes)
   const stages = useStore((s) => s.stages)
@@ -19,45 +23,52 @@ export function EndedListDialog() {
   const t = useT()
   const stageLabel = useStageLabel()
 
-  const ended = useMemo(
-    () =>
-      processes
-        .filter(isEnded)
-        .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt) || b.id - a.id),
-    [processes]
-  )
+  const { lists, lastStage } = useMemo(() => statLists(processes, stages), [processes, stages])
+  if (!kind) return null
+  const list = lists[kind]
+  const titles = t.processList.titles
+  const title =
+    kind === 'offer' ? titles.offer(lastStage ? stageLabel(lastStage) : '') : titles[kind]
 
   return (
     <Dialog
-      open={open}
-      onOpenChange={openEndedList}
-      title={t.endedList.title}
-      description={t.endedList.description(ended.length)}
+      open
+      onOpenChange={(open) => !open && openProcessList(null)}
+      title={title}
+      description={t.processList.count(list.length)}
       className="w-[560px]"
     >
-      {ended.length === 0 ? (
+      {list.length === 0 ? (
         <div className="flex flex-col items-center gap-2 py-10 text-[13px] text-muted">
-          <CircleSlash className="size-6 text-subtle" />
-          {t.endedList.empty}
+          <Inbox className="size-6 text-subtle" />
+          {t.processList.empty}
         </div>
       ) : (
         <ul className="flex flex-col gap-1.5">
-          {ended.map((p) => {
+          {list.map((p) => {
+            const ended = isEnded(p)
             const stage = stages.find((s) => s.id === p.stageId)
             const pay = formatPay(p, language)
+            // Ended rows show when they last changed; active rows show when the process started.
+            const date = ended
+              ? t.processList.updated(formatDate(p.updatedAt.slice(0, 10), language) ?? '')
+              : p.startDate
+                ? t.card.started(formatDate(p.startDate, language) ?? '')
+                : null
             return (
               <li key={p.id}>
                 <button
                   type="button"
                   onClick={() => {
-                    openEndedList(false)
+                    openProcessList(null)
                     openEditor({ mode: 'edit', id: p.id })
                   }}
                   className="flex w-full items-center gap-3 rounded-xl border border-border bg-surface px-3 py-2.5 text-left transition-colors hover:border-border-strong hover:bg-surface-2/60 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
                 >
                   <div
                     className={cn(
-                      'flex size-8 shrink-0 items-center justify-center rounded-lg text-[11px] font-semibold text-white opacity-70',
+                      'flex size-8 shrink-0 items-center justify-center rounded-lg text-[11px] font-semibold text-white',
+                      ended && 'opacity-70',
                       avatarColor(p.company)
                     )}
                   >
@@ -66,17 +77,15 @@ export function EndedListDialog() {
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-1.5">
                       <span className="truncate text-[13.5px] font-semibold text-fg">{p.company}</span>
-                      {p.status === 'rejected' ? (
-                        <Badge tone="rose">{t.status.rejected}</Badge>
-                      ) : (
-                        <Badge>{t.status.withdrawn}</Badge>
-                      )}
+                      {p.status === 'rejected' && <Badge tone="rose">{t.status.rejected}</Badge>}
+                      {p.status === 'withdrawn' && <Badge>{t.status.withdrawn}</Badge>}
                     </div>
                     <div className="truncate text-[12.5px] text-muted">
                       {p.role}
-                      {stage && ` · ${t.endedList.lastStage(stageLabel(stage))}`}
+                      {stage &&
+                        ` · ${ended ? t.processList.lastStage(stageLabel(stage)) : stageLabel(stage)}`}
                     </div>
-                    {p.endReason && (
+                    {ended && p.endReason && (
                       <p className="mt-1 line-clamp-2 text-[12.5px] text-subtle italic">
                         “{p.endReason}”
                       </p>
@@ -89,7 +98,7 @@ export function EndedListDialog() {
                         {pay}
                       </span>
                     )}
-                    <span>{t.endedList.updated(formatDate(p.updatedAt.slice(0, 10), language) ?? '')}</span>
+                    {date && <span>{date}</span>}
                   </div>
                 </button>
               </li>

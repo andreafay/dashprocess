@@ -12,6 +12,7 @@ import { isLanguage, MESSAGES, type Language } from '@shared/i18n'
 import { applyTheme } from '@/lib/theme'
 import { processTags } from '@/lib/tags'
 import { errorMessage } from '@/lib/utils'
+import type { ListKind } from '@/lib/stats'
 
 /** What the process dialog is showing: nothing, a new process (optionally in a stage), or an existing one. */
 export type Editing = null | { mode: 'new'; stageId?: number } | { mode: 'edit'; id: number }
@@ -26,21 +27,24 @@ interface State {
   deletingStageId: number | null
   toast: string | null
   settingsOpen: boolean
-  endedListOpen: boolean
+  /** The tile list being shown, or null. */
+  processList: ListKind | null
   theme: Theme
   language: Language
   filtersSidebar: boolean
   showEnded: boolean
+  showStats: boolean
   filters: Filters
 
   load(): Promise<void>
   setSearch(search: string): void
   openSettings(open: boolean): void
-  openEndedList(open: boolean): void
+  openProcessList(kind: ListKind | null): void
   setTheme(theme: Theme): void
   setLanguage(language: Language): void
   setFiltersSidebar(on: boolean): void
   setShowEnded(on: boolean): void
+  setShowStats(on: boolean): void
   setFilter<K extends keyof Filters>(key: K, value: Filters[K]): void
   clearFilters(): void
   openEditor(editing: Editing): void
@@ -105,20 +109,21 @@ export const useStore = create<State>((set, get) => {
     deletingStageId: null,
     toast: null,
     settingsOpen: false,
-    endedListOpen: false,
+    processList: null,
     theme: window.api.settings.initialTheme,
     language: isLanguage(window.api.settings.initialLanguage)
       ? window.api.settings.initialLanguage
       : 'en',
     filtersSidebar: window.api.settings.initialFiltersSidebar === true,
     showEnded: window.api.settings.initialShowEnded === true,
+    showStats: window.api.settings.initialShowStats !== false,
     // `??` guards against a preload from before filters were saved (a stale `npm run dev`).
     filters: window.api.settings.initialFilters ?? NO_FILTERS,
 
     load: () => run(reload).then(() => {}),
     setSearch: (search) => set({ search }),
     openSettings: (open) => set({ settingsOpen: open }),
-    openEndedList: (open) => set({ endedListOpen: open }),
+    openProcessList: (kind) => set({ processList: kind }),
     // Applies the theme right away and saves it. The main process also sets
     // nativeTheme.themeSource so the title bar buttons match.
     setTheme: (theme) => {
@@ -130,6 +135,10 @@ export const useStore = create<State>((set, get) => {
       set({ language })
       document.documentElement.lang = language
       save(() => window.api.settings.setLanguage(language))
+    },
+    setShowStats: (on) => {
+      set({ showStats: on })
+      save(() => window.api.settings.setShowStats(on))
     },
     setShowEnded: (on) => {
       set({ showEnded: on })
