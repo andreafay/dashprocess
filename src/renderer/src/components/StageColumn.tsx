@@ -118,7 +118,7 @@ export function StageColumn({ stage, processes, totalCount }: Props) {
 }
 
 function SortableCard({ process }: { process: Process }) {
-  const openEditor = useStore((s) => s.openEditor)
+  const openViewer = useStore((s) => s.openViewer)
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: cardDndId(process.id)
   })
@@ -128,9 +128,9 @@ function SortableCard({ process }: { process: Process }) {
       style={{ transform: CSS.Transform.toString(transform), transition }}
       {...attributes}
       {...listeners}
-      onClick={() => openEditor({ mode: 'edit', id: process.id })}
+      onClick={() => openViewer(process.id)}
       onKeyDown={(e) => {
-        if (e.key === 'Enter') openEditor({ mode: 'edit', id: process.id })
+        if (e.key === 'Enter') openViewer(process.id)
         else listeners?.onKeyDown?.(e)
       }}
       className="rounded-xl focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"

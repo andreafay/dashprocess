@@ -76,7 +76,12 @@ export function ProcessDialog() {
   }, [editing])
 
   const open = editing !== null && form !== null
-  const close = () => openEditor(null)
+  const openViewer = useStore((s) => s.openViewer)
+  /** Editing an existing process returns to its read view, unless it was just deleted. */
+  const close = (backToView = true) => {
+    openEditor(null)
+    if (backToView && existing) openViewer(existing.id)
+  }
   const set = (patch: Partial<FormState>) => setForm((f) => (f ? { ...f, ...patch } : f))
 
   async function submit(e: FormEvent) {
@@ -117,7 +122,7 @@ export function ProcessDialog() {
                 size="sm"
                 onClick={async () => {
                   await deleteProcess(existing.id)
-                  close()
+                  close(false)
                 }}
               >
                 <Trash2 /> {t.form.confirmDelete}
@@ -128,7 +133,7 @@ export function ProcessDialog() {
               </Button>
             ))}
           <div className="flex-1" />
-          <Button size="sm" onClick={close}>
+          <Button size="sm" onClick={() => close()}>
             {t.common.cancel}
           </Button>
           <Button variant="primary" size="sm" type="submit" form="process-form" disabled={saving}>

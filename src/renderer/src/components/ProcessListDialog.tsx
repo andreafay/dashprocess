@@ -16,7 +16,7 @@ import { isEnded, useStore } from '@/store'
 export function ProcessListDialog() {
   const kind = useStore((s) => s.processList)
   const openProcessList = useStore((s) => s.openProcessList)
-  const openEditor = useStore((s) => s.openEditor)
+  const openViewer = useStore((s) => s.openViewer)
   const processes = useStore((s) => s.processes)
   const stages = useStore((s) => s.stages)
   const language = useStore((s) => s.language)
@@ -61,7 +61,7 @@ export function ProcessListDialog() {
                   type="button"
                   onClick={() => {
                     openProcessList(null)
-                    openEditor({ mode: 'edit', id: p.id })
+                    openViewer(p.id)
                   }}
                   className="flex w-full items-center gap-3 rounded-xl border border-border bg-surface px-3 py-2.5 text-left transition-colors hover:border-border-strong hover:bg-surface-2/60 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
                 >

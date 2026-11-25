@@ -65,6 +65,13 @@ export const it: Messages = {
     european: 'Europea'
   },
 
+  view: {
+    edit: 'Modifica',
+    noNotes: 'Ancora nessuna nota.',
+    added: (date) => `Aggiunto il ${date}`,
+    updated: (date) => `aggiornato il ${date}`
+  },
+
   card: {
     hasNotes: 'Ha delle note',
     endReason: (reason) => `Feedback: ${reason}`,

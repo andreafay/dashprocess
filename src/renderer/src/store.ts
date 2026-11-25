@@ -24,6 +24,8 @@ interface State {
   loaded: boolean
   search: string
   editing: Editing
+  /** The process shown in the read view, or null. */
+  viewing: number | null
   stagesDialogOpen: boolean
   deletingStageId: number | null
   toast: string | null
@@ -54,6 +56,7 @@ interface State {
   setFilter<K extends keyof Filters>(key: K, value: Filters[K]): void
   clearFilters(): void
   openEditor(editing: Editing): void
+  openViewer(id: number | null): void
   openStagesDialog(open: boolean): void
   askDeleteStage(id: number | null): void
   showError(err: unknown): void
@@ -113,6 +116,7 @@ export const useStore = create<State>((set, get) => {
     loaded: false,
     search: '',
     editing: null,
+    viewing: null,
     stagesDialogOpen: false,
     deletingStageId: null,
     toast: null,
@@ -191,6 +195,7 @@ export const useStore = create<State>((set, get) => {
       save(() => window.api.settings.setFilters(NO_FILTERS))
     },
     openEditor: (editing) => set({ editing }),
+    openViewer: (id) => set({ viewing: id }),
     openStagesDialog: (open) => set({ stagesDialogOpen: open }),
     askDeleteStage: (id) => set({ deletingStageId: id }),
     showError: (err) => {

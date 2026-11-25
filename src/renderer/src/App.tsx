@@ -3,6 +3,7 @@ import { AlertCircle, Columns3, Plus, Search, Settings, X } from 'lucide-react'
 import { StatsBar } from './components/StatsBar'
 import { Board } from './components/Board'
 import { ProcessDialog } from './components/ProcessDialog'
+import { ProcessView } from './components/ProcessView'
 import { StagesDialog } from './components/StagesDialog'
 import { DeleteStageDialog } from './components/DeleteStageDialog'
 import { Button } from './components/ui/button'
@@ -107,6 +108,7 @@ export default function App() {
         </main>
       </div>
 
+      <ProcessView />
       <ProcessDialog />
       <StagesDialog />
       <DeleteStageDialog />

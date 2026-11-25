@@ -67,6 +67,13 @@ export const en = {
     european: 'European'
   },
 
+  view: {
+    edit: 'Edit',
+    noNotes: 'No notes yet.',
+    added: (date: string) => `Added ${date}`,
+    updated: (date: string) => `updated ${date}`
+  },
+
   card: {
     hasNotes: 'Has notes',
     endReason: (reason: string) => `Feedback: ${reason}`,
