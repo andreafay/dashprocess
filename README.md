@@ -17,7 +17,7 @@ npm run dev
 
 ## Google sign-in
 
-Signing in is optional. It only shows your name ("Good morning, Andrea 👋") and photo. Your data always stays in the local database on your computer. The app keeps just your Google profile (name, email, photo), never a password or a token.
+Signing in is optional. It only shows your name and photo. Your data always stays in the local database on your computer. The app keeps just your Google profile (name, email, photo), never a password or a token.
 
 To turn it on, create a free Google OAuth client once. Google calls this area **Google Auth Platform** (it was "OAuth consent screen"):
 
